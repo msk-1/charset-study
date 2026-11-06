@@ -2,6 +2,8 @@
 
 文字コードを学習するための Java プロジェクト。
 
+対応表の公開ページ: https://msk-1.github.io/charset-study/
+
 ## 必要なもの
 
 - JDK 25
@@ -29,3 +31,7 @@ mvn test                                          # 性質を確かめるテス�
 - `Encodings.java` — 16 進表記・文字化け再現・厳密なデコードの小道具
 - `samples/` — 文字コード別のサンプルファイル。自分で作ったファイルを置いてもよい
 - `EncodingsTest.java` — 調べた性質をテストとして残す場所
+
+## 公開
+
+`doc/` を GitHub Pages に公開している。`main` に push すると `.github/workflows/pages.yml` が `doc/` を配信し直す。
