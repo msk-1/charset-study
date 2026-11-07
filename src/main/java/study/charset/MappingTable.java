@@ -167,6 +167,7 @@ public class MappingTable {
         h.append("""
                 <p class="lead-text">日本語の文字コードを、文字集合と符号化方式の両面から見比べるための資料。次の内容をまとめている。</p>
                 <ul class="lead-list">
+                <li><b>文字集合と符号化方式</b>：どの符号化方式がどの文字集合を扱うかの対応表と、同じ文字を各方式で書いたバイト列</li>
                 <li><b>Shift_JIS と windows-31j</b>：バイト列をデコードしたときにどの Unicode の文字になるか。windows-31j が拡張した範囲を色で示す</li>
                 <li><b>JIS の区点</b>：1〜120 区に何が割り当てられているかの全体図</li>
                 <li><b>UTF-8</b>：コードポイントからバイト列への変換規則と、Shift_JIS 系とのバイト数の違い</li>
@@ -180,6 +181,8 @@ public class MappingTable {
 
         h.append("""
                 <nav class="toc" aria-label="目次"><b>目次</b>
+                <span class="tgroup">基礎</span>
+                <a href="#schemes" data-legend="none">文字集合と符号化方式</a>
                 <span class="tgroup">Shift_JIS・windows-31j</span>
                 <a href="#legend" data-legend="sjis">凡例</a>
                 <a href="#overview" data-legend="sjis">全体図：1 バイト目</a>
@@ -197,6 +200,7 @@ public class MappingTable {
                 <a href="#mj" data-legend="none">MJ 文字と MJ+</a>
                 """);
         h.append("</nav>\n").append(sideLegend());
+        renderSchemes(h);
         renderLegend(h, singleByte, doubleByte);
         renderOverview(h, singleByte, doubleByte);
         renderKutenMap(h, doubleByte);
@@ -250,6 +254,129 @@ public class MappingTable {
 
         l.append("<div class=\"sl-block\" data-legend=\"none\"><div class=\"sl-note\">この節に色分けはない</div></div>\n");
         return l.append("</div>\n</aside>\n").toString();
+    }
+
+    // ---- 文字集合と符号化方式 ----
+
+    /** 文字集合 × 符号化方式の対応表の 1 行。cells は SCHEME_SETS と同じ順。 */
+    record Scheme(String name, String javaName, String[] cells, String bytes, String asciiInTrail) {
+    }
+
+    private static final List<String> SCHEME_SETS = List.of(
+            "ASCII", "JIS X 0201 ローマ字", "JIS X 0201 カタカナ", "JIS X 0208", "JIS X 0212", "JIS X 0213",
+            "Windows の拡張", "Unicode");
+
+    /** 規格の定義なので手で書く。○ は直接扱う、(○) は Unicode に含まれるので表せる。 */
+    private static final List<Scheme> SCHEMES = List.of(
+            new Scheme("US-ASCII", "US-ASCII",
+                    new String[] {"○", "", "", "", "", "", "", ""}, "1", "—"),
+            new Scheme("ISO-2022-JP（JIS コード）", "ISO-2022-JP",
+                    new String[] {"○", "○", "△", "○", "", "", "", ""}, "1〜2（エスケープシーケンスで切り替える）", "出る"),
+            new Scheme("EUC-JP", "EUC-JP",
+                    new String[] {"○", "", "○", "○", "○", "", "", ""}, "1〜3", "出ない"),
+            new Scheme("Shift_JIS", "Shift_JIS",
+                    new String[] {"△", "○", "○", "○", "", "", "", ""}, "1〜2", "出る"),
+            new Scheme("windows-31j（CP932）", "windows-31j",
+                    new String[] {"○", "", "○", "○", "", "", "○", ""}, "1〜2", "出る"),
+            new Scheme("Shift_JIS-2004", "x-SJIS_0213",
+                    new String[] {"△", "○", "○", "○", "", "○", "", ""}, "1〜2", "出る"),
+            new Scheme("EUC-JIS-2004", "（JDK にない）",
+                    new String[] {"○", "", "○", "○", "", "○", "", ""}, "1〜3", "出ない"),
+            new Scheme("UTF-8", "UTF-8",
+                    new String[] {"○", "(○)", "(○)", "(○)", "(○)", "(○)", "(○)", "○"}, "1〜4", "出ない"),
+            new Scheme("UTF-16", "UTF-16 / UTF-16BE / UTF-16LE",
+                    new String[] {"(○)", "(○)", "(○)", "(○)", "(○)", "(○)", "(○)", "○"}, "2 か 4", "出る"),
+            new Scheme("UTF-32", "UTF-32 / UTF-32BE / UTF-32LE",
+                    new String[] {"(○)", "(○)", "(○)", "(○)", "(○)", "(○)", "(○)", "○"}, "4", "出る"));
+
+    /** バイト列を比べる文字と、どの文字集合に入っているかの説明。 */
+    private static final List<String[]> SCHEME_SAMPLES = List.of(
+            new String[] {"A", "ASCII"},
+            new String[] {"ｱ", "JIS X 0201 カタカナ（半角カナ）"},
+            new String[] {"漢", "JIS X 0208 第 1 水準"},
+            new String[] {"表", "JIS X 0208 第 1 水準。Shift_JIS 系では 2 バイト目が 5C（\\ と同じ値）になる"},
+            new String[] {"丂", "JIS X 0212（補助漢字）・JIS X 0213 第 4 水準"},
+            new String[] {"①", "NEC 特殊文字・JIS X 0213"},
+            new String[] {"髙", "IBM 拡張文字"},
+            new String[] {"𠀋", "JIS X 0213 第 3 水準。Unicode では BMP の外"},
+            new String[] {"🍣", "Unicode のみ"});
+
+    private static final List<String> SAMPLE_CHARSETS = List.of(
+            "US-ASCII", "ISO-2022-JP", "EUC-JP", "Shift_JIS", "windows-31j", "x-SJIS_0213", "UTF-8", "UTF-16BE",
+            "UTF-32BE");
+
+    /** s を厳密にエンコードしたバイト列。表せなければ null。 */
+    private static int[] encodeStrict(Charset cs, String s) {
+        try {
+            ByteBuffer b = cs.newEncoder().encode(java.nio.CharBuffer.wrap(s));
+            byte[] out = new byte[b.remaining()];
+            b.get(out);
+            return toInts(out);
+        } catch (CharacterCodingException e) {
+            return null;
+        }
+    }
+
+    private static void renderSchemes(StringBuilder h) {
+        h.append("""
+                <section id="schemes">
+                <h2>文字集合と符号化方式</h2>
+                <p>「文字コード」という言葉は、2 つの別のものをまとめて指している。</p>
+                <ul>
+                <li><b>文字集合</b>（符号化文字集合）：どの文字を扱うかと、各文字に振る番号を決めたもの。
+                JIS X 0208 なら区点番号（「漢」は 20 区 33 点）、Unicode ならコードポイント（「漢」は U+6F22）</li>
+                <li><b>符号化方式</b>：その番号を、ファイルや通信で使うバイト列にする規則。
+                同じ JIS X 0208 の「漢」でも、Shift_JIS なら 8A BF、EUC-JP なら B4 C1 になる</li>
+                </ul>
+                <p>1 つの符号化方式が複数の文字集合を組み合わせて使うことが多い。
+                Shift_JIS は JIS X 0201（1 バイト）と JIS X 0208（2 バイト）を、UTF-8 は Unicode だけを使う。
+                Java の <code>Charset</code> は文字集合ではなく符号化方式に当たる。</p>
+                <h3>どの符号化方式がどの文字集合を扱うか</h3>
+                """);
+        h.append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>符号化方式</th>");
+        SCHEME_SETS.forEach(s -> h.append("<th>").append(esc(s)).append("</th>"));
+        h.append("<th>1 文字のバイト数</th><th>ASCII の値が 2 バイト目以降に出るか</th><th>Java の名前</th></tr></thead>\n<tbody>\n");
+        for (Scheme s : SCHEMES) {
+            h.append("<tr><td>").append(esc(s.name)).append("</td>");
+            for (String c : s.cells) {
+                h.append(c.isEmpty() ? "<td class=\"x\">—</td>" : "<td class=\"c\">" + esc(c) + "</td>");
+            }
+            h.append("<td>").append(esc(s.bytes)).append("</td><td>").append(esc(s.asciiInTrail))
+                    .append("</td><td class=\"mono\">").append(esc(s.javaName)).append("</td></tr>\n");
+        }
+        h.append("</tbody>\n</table></div>\n");
+        h.append("""
+                <ul class="note">
+                <li>○：その文字集合を直接使う。(○)：Unicode がその文字集合の文字を含んでいるので表せる。—：表せない</li>
+                <li>Shift_JIS 系の 1 バイト部分は、規格上は JIS X 0201 ローマ字（5C が ¥、7E が ‾）。
+                JDK の Shift_JIS と x-SJIS_0213 は 5C と 7E を ASCII の \\ と ~ として扱うので △ とした。windows-31j は 1 バイト部分が ASCII</li>
+                <li>ISO-2022-JP の規格（RFC 1468）は半角カナを含まない。JDK は ESC ( I で切り替えて読み書きできるので △ とした</li>
+                <li>JIS X 0213 は JIS X 0208 の文字をすべて含み、第 3・第 4 水準などを加えたもの。
+                Windows の拡張は NEC 特殊文字・NEC 選定 IBM 拡張文字・IBM 拡張文字で、下の「2 バイト文字」の節に詳しい</li>
+                <li>「ASCII の値が 2 バイト目以降に出る」方式では、バイト単位で <code>\\</code> や <code>/</code> を探す処理が
+                文字の途中を誤って拾うことがある（下の表の「表」を参照）</li>
+                </ul>
+                <h3>同じ文字を各符号化方式で書いたバイト列</h3>
+                <p>表の値は、JDK の <code>CharsetEncoder</code> で 1 文字ずつ厳密にエンコードした結果。× は表せないことを示す。
+                ISO-2022-JP のバイト列には、文字集合を切り替えるエスケープシーケンス（<span class="mono">1B 24 42</span> で JIS X 0208 へ、
+                <span class="mono">1B 28 42</span> で ASCII へ戻す）が含まれる。</p>
+                """);
+        h.append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>文字</th><th>どの文字集合の文字か</th>"
+                + "<th>コードポイント</th>");
+        SAMPLE_CHARSETS.forEach(n -> h.append("<th>").append(esc(n)).append("</th>"));
+        h.append("</tr></thead>\n<tbody>\n");
+        for (String[] sample : SCHEME_SAMPLES) {
+            String s = sample[0];
+            h.append("<tr><td class=\"glyph\">").append(esc(s)).append("</td><td>").append(esc(sample[1]))
+                    .append("</td><td class=\"mono\">U+").append(cp(s)).append("</td>");
+            for (String n : SAMPLE_CHARSETS) {
+                int[] b = encodeStrict(Charset.forName(n), s);
+                h.append(b == null ? "<td class=\"x\">×</td>"
+                        : "<td class=\"mono bytes\">" + hexBytes(b) + "</td>");
+            }
+            h.append("</tr>\n");
+        }
+        h.append("</tbody>\n</table></div>\n</section>\n");
     }
 
     private static void renderLegend(StringBuilder h, List<Cell> singleByte, Map<Integer, List<Cell>> doubleByte) {
@@ -1219,6 +1346,8 @@ public class MappingTable {
             th { background: var(--head); font-weight: 600; font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; padding: 2px 6px; }
             .legend td, .legend th, .list td, .list th { padding: 4px 10px; text-align: left; font-family: inherit; font-size: 0.92rem; }
             .legend .num { text-align: right; font-variant-numeric: tabular-nums; }
+            .list td.c { text-align: center; } .list td.x { text-align: center; color: var(--muted); }
+            .list td.bytes { white-space: nowrap; }
             .swatch { display: inline-block; width: 1.4em; height: 1.1em; vertical-align: middle; border: 1px solid var(--line); border-radius: 3px; }
             .grid td { width: 3.6em; min-width: 3.6em; height: 3.4em; text-align: center; vertical-align: middle; padding: 2px; }
             .grid.overview td { height: 2.2em; font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; }

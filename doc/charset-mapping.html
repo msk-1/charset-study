@@ -49,6 +49,8 @@ th, td { border: 1px solid var(--line); }
 th { background: var(--head); font-weight: 600; font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; padding: 2px 6px; }
 .legend td, .legend th, .list td, .list th { padding: 4px 10px; text-align: left; font-family: inherit; font-size: 0.92rem; }
 .legend .num { text-align: right; font-variant-numeric: tabular-nums; }
+.list td.c { text-align: center; } .list td.x { text-align: center; color: var(--muted); }
+.list td.bytes { white-space: nowrap; }
 .swatch { display: inline-block; width: 1.4em; height: 1.1em; vertical-align: middle; border: 1px solid var(--line); border-radius: 3px; }
 .grid td { width: 3.6em; min-width: 3.6em; height: 3.4em; text-align: center; vertical-align: middle; padding: 2px; }
 .grid.overview td { height: 2.2em; font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; }
@@ -180,6 +182,7 @@ h2, h3, details { scroll-margin-top: 72px; }
 <p class="subtitle">Shift_JIS・windows-31j・Unicode・UTF-8・MJ+</p>
 <p class="lead-text">日本語の文字コードを、文字集合と符号化方式の両面から見比べるための資料。次の内容をまとめている。</p>
 <ul class="lead-list">
+<li><b>文字集合と符号化方式</b>：どの符号化方式がどの文字集合を扱うかの対応表と、同じ文字を各方式で書いたバイト列</li>
 <li><b>Shift_JIS と windows-31j</b>：バイト列をデコードしたときにどの Unicode の文字になるか。windows-31j が拡張した範囲を色で示す</li>
 <li><b>JIS の区点</b>：1〜120 区に何が割り当てられているかの全体図</li>
 <li><b>UTF-8</b>：コードポイントからバイト列への変換規則と、Shift_JIS 系とのバイト数の違い</li>
@@ -188,6 +191,8 @@ h2, h3, details { scroll-margin-top: 72px; }
 </ul>
 <p class="lead-text">表と数値は手書きではなく、Java の <code>Charset</code> と Unicode のデータ（JDK 25.0.1）から <code>MappingTable.java</code> で生成した。MJ 文字と MJ+ の説明は公開資料による。</p>
 <nav class="toc" aria-label="目次"><b>目次</b>
+<span class="tgroup">基礎</span>
+<a href="#schemes" data-legend="none">文字集合と符号化方式</a>
 <span class="tgroup">Shift_JIS・windows-31j</span>
 <a href="#legend" data-legend="sjis">凡例</a>
 <a href="#overview" data-legend="sjis">全体図：1 バイト目</a>
@@ -247,6 +252,63 @@ h2, h3, details { scroll-margin-top: 72px; }
 <div class="sl-block" data-legend="none"><div class="sl-note">この節に色分けはない</div></div>
 </div>
 </aside>
+<section id="schemes">
+<h2>文字集合と符号化方式</h2>
+<p>「文字コード」という言葉は、2 つの別のものをまとめて指している。</p>
+<ul>
+<li><b>文字集合</b>（符号化文字集合）：どの文字を扱うかと、各文字に振る番号を決めたもの。
+JIS X 0208 なら区点番号（「漢」は 20 区 33 点）、Unicode ならコードポイント（「漢」は U+6F22）</li>
+<li><b>符号化方式</b>：その番号を、ファイルや通信で使うバイト列にする規則。
+同じ JIS X 0208 の「漢」でも、Shift_JIS なら 8A BF、EUC-JP なら B4 C1 になる</li>
+</ul>
+<p>1 つの符号化方式が複数の文字集合を組み合わせて使うことが多い。
+Shift_JIS は JIS X 0201（1 バイト）と JIS X 0208（2 バイト）を、UTF-8 は Unicode だけを使う。
+Java の <code>Charset</code> は文字集合ではなく符号化方式に当たる。</p>
+<h3>どの符号化方式がどの文字集合を扱うか</h3>
+<div class="scroll"><table class="list">
+<thead><tr><th>符号化方式</th><th>ASCII</th><th>JIS X 0201 ローマ字</th><th>JIS X 0201 カタカナ</th><th>JIS X 0208</th><th>JIS X 0212</th><th>JIS X 0213</th><th>Windows の拡張</th><th>Unicode</th><th>1 文字のバイト数</th><th>ASCII の値が 2 バイト目以降に出るか</th><th>Java の名前</th></tr></thead>
+<tbody>
+<tr><td>US-ASCII</td><td class="c">○</td><td class="x">—</td><td class="x">—</td><td class="x">—</td><td class="x">—</td><td class="x">—</td><td class="x">—</td><td class="x">—</td><td>1</td><td>—</td><td class="mono">US-ASCII</td></tr>
+<tr><td>ISO-2022-JP（JIS コード）</td><td class="c">○</td><td class="c">○</td><td class="c">△</td><td class="c">○</td><td class="x">—</td><td class="x">—</td><td class="x">—</td><td class="x">—</td><td>1〜2（エスケープシーケンスで切り替える）</td><td>出る</td><td class="mono">ISO-2022-JP</td></tr>
+<tr><td>EUC-JP</td><td class="c">○</td><td class="x">—</td><td class="c">○</td><td class="c">○</td><td class="c">○</td><td class="x">—</td><td class="x">—</td><td class="x">—</td><td>1〜3</td><td>出ない</td><td class="mono">EUC-JP</td></tr>
+<tr><td>Shift_JIS</td><td class="c">△</td><td class="c">○</td><td class="c">○</td><td class="c">○</td><td class="x">—</td><td class="x">—</td><td class="x">—</td><td class="x">—</td><td>1〜2</td><td>出る</td><td class="mono">Shift_JIS</td></tr>
+<tr><td>windows-31j（CP932）</td><td class="c">○</td><td class="x">—</td><td class="c">○</td><td class="c">○</td><td class="x">—</td><td class="x">—</td><td class="c">○</td><td class="x">—</td><td>1〜2</td><td>出る</td><td class="mono">windows-31j</td></tr>
+<tr><td>Shift_JIS-2004</td><td class="c">△</td><td class="c">○</td><td class="c">○</td><td class="c">○</td><td class="x">—</td><td class="c">○</td><td class="x">—</td><td class="x">—</td><td>1〜2</td><td>出る</td><td class="mono">x-SJIS_0213</td></tr>
+<tr><td>EUC-JIS-2004</td><td class="c">○</td><td class="x">—</td><td class="c">○</td><td class="c">○</td><td class="x">—</td><td class="c">○</td><td class="x">—</td><td class="x">—</td><td>1〜3</td><td>出ない</td><td class="mono">（JDK にない）</td></tr>
+<tr><td>UTF-8</td><td class="c">○</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">○</td><td>1〜4</td><td>出ない</td><td class="mono">UTF-8</td></tr>
+<tr><td>UTF-16</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">○</td><td>2 か 4</td><td>出る</td><td class="mono">UTF-16 / UTF-16BE / UTF-16LE</td></tr>
+<tr><td>UTF-32</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">(○)</td><td class="c">○</td><td>4</td><td>出る</td><td class="mono">UTF-32 / UTF-32BE / UTF-32LE</td></tr>
+</tbody>
+</table></div>
+<ul class="note">
+<li>○：その文字集合を直接使う。(○)：Unicode がその文字集合の文字を含んでいるので表せる。—：表せない</li>
+<li>Shift_JIS 系の 1 バイト部分は、規格上は JIS X 0201 ローマ字（5C が ¥、7E が ‾）。
+JDK の Shift_JIS と x-SJIS_0213 は 5C と 7E を ASCII の \ と ~ として扱うので △ とした。windows-31j は 1 バイト部分が ASCII</li>
+<li>ISO-2022-JP の規格（RFC 1468）は半角カナを含まない。JDK は ESC ( I で切り替えて読み書きできるので △ とした</li>
+<li>JIS X 0213 は JIS X 0208 の文字をすべて含み、第 3・第 4 水準などを加えたもの。
+Windows の拡張は NEC 特殊文字・NEC 選定 IBM 拡張文字・IBM 拡張文字で、下の「2 バイト文字」の節に詳しい</li>
+<li>「ASCII の値が 2 バイト目以降に出る」方式では、バイト単位で <code>\</code> や <code>/</code> を探す処理が
+文字の途中を誤って拾うことがある（下の表の「表」を参照）</li>
+</ul>
+<h3>同じ文字を各符号化方式で書いたバイト列</h3>
+<p>表の値は、JDK の <code>CharsetEncoder</code> で 1 文字ずつ厳密にエンコードした結果。× は表せないことを示す。
+ISO-2022-JP のバイト列には、文字集合を切り替えるエスケープシーケンス（<span class="mono">1B 24 42</span> で JIS X 0208 へ、
+<span class="mono">1B 28 42</span> で ASCII へ戻す）が含まれる。</p>
+<div class="scroll"><table class="list">
+<thead><tr><th>文字</th><th>どの文字集合の文字か</th><th>コードポイント</th><th>US-ASCII</th><th>ISO-2022-JP</th><th>EUC-JP</th><th>Shift_JIS</th><th>windows-31j</th><th>x-SJIS_0213</th><th>UTF-8</th><th>UTF-16BE</th><th>UTF-32BE</th></tr></thead>
+<tbody>
+<tr><td class="glyph">A</td><td>ASCII</td><td class="mono">U+0041</td><td class="mono bytes">41</td><td class="mono bytes">41</td><td class="mono bytes">41</td><td class="mono bytes">41</td><td class="mono bytes">41</td><td class="mono bytes">41</td><td class="mono bytes">41</td><td class="mono bytes">00 41</td><td class="mono bytes">00 00 00 41</td></tr>
+<tr><td class="glyph">ｱ</td><td>JIS X 0201 カタカナ（半角カナ）</td><td class="mono">U+FF71</td><td class="x">×</td><td class="mono bytes">1B 28 49 31 1B 28 42</td><td class="mono bytes">8E B1</td><td class="mono bytes">B1</td><td class="mono bytes">B1</td><td class="mono bytes">B1</td><td class="mono bytes">EF BD B1</td><td class="mono bytes">FF 71</td><td class="mono bytes">00 00 FF 71</td></tr>
+<tr><td class="glyph">漢</td><td>JIS X 0208 第 1 水準</td><td class="mono">U+6F22</td><td class="x">×</td><td class="mono bytes">1B 24 42 34 41 1B 28 42</td><td class="mono bytes">B4 C1</td><td class="mono bytes">8A BF</td><td class="mono bytes">8A BF</td><td class="mono bytes">8A BF</td><td class="mono bytes">E6 BC A2</td><td class="mono bytes">6F 22</td><td class="mono bytes">00 00 6F 22</td></tr>
+<tr><td class="glyph">表</td><td>JIS X 0208 第 1 水準。Shift_JIS 系では 2 バイト目が 5C（\ と同じ値）になる</td><td class="mono">U+8868</td><td class="x">×</td><td class="mono bytes">1B 24 42 49 3D 1B 28 42</td><td class="mono bytes">C9 BD</td><td class="mono bytes">95 5C</td><td class="mono bytes">95 5C</td><td class="mono bytes">95 5C</td><td class="mono bytes">E8 A1 A8</td><td class="mono bytes">88 68</td><td class="mono bytes">00 00 88 68</td></tr>
+<tr><td class="glyph">丂</td><td>JIS X 0212（補助漢字）・JIS X 0213 第 4 水準</td><td class="mono">U+4E02</td><td class="x">×</td><td class="x">×</td><td class="mono bytes">8F B0 A1</td><td class="x">×</td><td class="x">×</td><td class="mono bytes">F0 41</td><td class="mono bytes">E4 B8 82</td><td class="mono bytes">4E 02</td><td class="mono bytes">00 00 4E 02</td></tr>
+<tr><td class="glyph">①</td><td>NEC 特殊文字・JIS X 0213</td><td class="mono">U+2460</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="mono bytes">87 40</td><td class="mono bytes">87 40</td><td class="mono bytes">E2 91 A0</td><td class="mono bytes">24 60</td><td class="mono bytes">00 00 24 60</td></tr>
+<tr><td class="glyph">髙</td><td>IBM 拡張文字</td><td class="mono">U+9AD9</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="mono bytes">FB FC</td><td class="x">×</td><td class="mono bytes">E9 AB 99</td><td class="mono bytes">9A D9</td><td class="mono bytes">00 00 9A D9</td></tr>
+<tr><td class="glyph">𠀋</td><td>JIS X 0213 第 3 水準。Unicode では BMP の外</td><td class="mono">U+2000B</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="mono bytes">87 A0</td><td class="mono bytes">F0 A0 80 8B</td><td class="mono bytes">D8 40 DC 0B</td><td class="mono bytes">00 02 00 0B</td></tr>
+<tr><td class="glyph">🍣</td><td>Unicode のみ</td><td class="mono">U+1F363</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="mono bytes">F0 9F 8D A3</td><td class="mono bytes">D8 3C DF 63</td><td class="mono bytes">00 01 F3 63</td></tr>
+</tbody>
+</table></div>
+</section>
 <section id="legend">
 <h2>凡例</h2>
 <table class="legend">

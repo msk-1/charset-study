@@ -26,7 +26,7 @@ mvn test                                          # 性質を確かめるテス�
 - `Main.java` — 文字列のコードポイントと、文字コード別のバイト列・往復の可否・文字化けを表示する
 - `FileDemo.java` — 文字列を文字コード別に `target/files/` へ書き、別の文字コードで読み比べる
 - `ReadDemo.java` — 既存のファイルを文字コード別に厳密にデコードし、矛盾なく読めるかを判定する
-- `MappingTable.java` — 日本語の文字コード対応表（Shift_JIS・windows-31j・区点・UTF-8・Unicode・MJ+）を JDK の Charset から生成する
+- `MappingTable.java` — 日本語の文字コード対応表（文字集合と符号化方式の対応・Shift_JIS・windows-31j・区点・UTF-8・Unicode・MJ+）を JDK の Charset から生成する
 - `doc/charset-mapping.html` — 生成した対応表
 - `Encodings.java` — 16 進表記・文字化け再現・厳密なデコードの小道具
 - `samples/` — 文字コード別のサンプルファイル。自分で作ったファイルを置いてもよい
