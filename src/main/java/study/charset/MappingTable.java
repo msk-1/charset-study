@@ -552,7 +552,10 @@ public class MappingTable {
                 <li><b>JIS X 0201</b>：ASCII とほぼ同じローマ字と、半角カタカナ。番号は 0〜255 の 1 バイト</li>
                 <li><b>JIS X 0208</b>：ひらがな・カタカナ・漢字など。94 × 94 のマスに並べ、<b>区点番号</b>（何区の何点か）で表す</li>
                 <li><b>JIS X 0212・JIS X 0213</b>：JIS X 0208 に入らなかった漢字を足したもの</li>
-                <li><b>Unicode</b>：世界中の文字を 1 つにまとめたもの。番号は<b>コードポイント</b>（U+0000〜U+10FFFF）</li>
+                <li><b>Unicode</b>：世界中の文字を 1 つにまとめたもの。番号は<b>コードポイント</b>（U+0000〜U+10FFFF）。
+                65,536 個ずつの 17 の<b>面</b>に分かれ、0 面（U+0000〜U+FFFF）を<b>BMP</b>（基本多言語面）と呼ぶ。
+                ひらがな・カタカナ・よく使う漢字はほぼ BMP にあり、BMP の外（U+10000〜U+10FFFF）には拡張漢字や絵文字がある
+                （<a href="#umap">Unicode の全体図</a>）</li>
                 </ul>
                 <p>文字集合に入っていない文字は、その文字集合を使う限りどう工夫しても表せない。
                 windows-31j で 🍣 が <code>?</code> になるのはこのためである。</p>
@@ -693,10 +696,26 @@ public class MappingTable {
         h.append("""
                 <h3>char は 1 文字ではなく UTF-16 の 1 単位</h3>
                 <p><code>char</code> は 16 ビットで、Unicode の文字そのものではなく <b>UTF-16 のコード単位</b>を 1 つ持つ。
-                <code>String</code> は <code>char</code> の並びとして振る舞う。BMP（U+0000〜U+FFFF）の文字は <code>char</code> 1 つで表せるが、
-                BMP の外（U+10000 以上）の文字は<b>サロゲートペア</b>と呼ぶ 2 つの <code>char</code> になる。
-                <code>length()</code> が返すのは文字数ではなく <code>char</code> の数である。</p>
+                <code>String</code> は <code>char</code> の並びとして振る舞う。<code>length()</code> が返すのは文字数ではなく <code>char</code> の数である。</p>
                 """);
+        int highCount = Character.MAX_HIGH_SURROGATE - Character.MIN_HIGH_SURROGATE + 1;
+        int lowCount = Character.MAX_LOW_SURROGATE - Character.MIN_LOW_SURROGATE + 1;
+        int supplementary = Character.MAX_CODE_POINT - Character.MIN_SUPPLEMENTARY_CODE_POINT + 1;
+        h.append("<p>BMP（U+0000〜U+FFFF）の文字は <code>char</code> 1 つで表せる。BMP の外（U+")
+                .append(String.format("%X", Character.MIN_SUPPLEMENTARY_CODE_POINT)).append("〜U+")
+                .append(String.format("%X", Character.MAX_CODE_POINT))
+                .append("）の文字は <code>char</code> 2 つで表し、この 2 つの組を<b>サロゲートペア</b>と呼ぶ。"
+                        + "前半には<b>上位サロゲート</b>（U+")
+                .append(String.format("%04X", (int) Character.MIN_HIGH_SURROGATE)).append("〜U+")
+                .append(String.format("%04X", (int) Character.MAX_HIGH_SURROGATE)).append(" の ")
+                .append(String.format("%,d", highCount)).append(" 個）を、後半には<b>下位サロゲート</b>（U+")
+                .append(String.format("%04X", (int) Character.MIN_LOW_SURROGATE)).append("〜U+")
+                .append(String.format("%04X", (int) Character.MAX_LOW_SURROGATE)).append(" の ")
+                .append(String.format("%,d", lowCount)).append(" 個）を使う。"
+                        + "サロゲートは文字ではなく、この組み合わせ専用に BMP の中に取ってある番号である。組み合わせは ")
+                .append(String.format("%,d × %,d = %,d", highCount, lowCount, highCount * lowCount))
+                .append(" 通りで、BMP の外のコードポイントの数（").append(String.format("%,d", supplementary))
+                .append("）と一致する。</p>\n");
         h.append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>文字列</th><th>中身</th><th>コードポイント</th>"
                 + "<th>char の値（UTF-16）</th><th class=\"c\">length()</th><th class=\"c\">codePointCount</th>"
                 + "<th class=\"c\">見た目の文字数（\\X）</th><th class=\"c\">UTF-8</th><th class=\"c\">windows-31j</th></tr></thead>\n<tbody>\n");
