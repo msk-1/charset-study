@@ -154,71 +154,88 @@ public class MappingTable {
                 <head>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
-                <title>日本語の文字コード対応表</title>
+                <title>日本語の文字コード入門</title>
                 <style>
                 """).append(CSS).append("""
                 </style>
                 </head>
                 <body>
                 <main>
-                <h1>日本語の文字コード対応表</h1>
-                <p class="subtitle">Shift_JIS・windows-31j・Unicode・UTF-8・MJ+</p>
+                <h1>日本語の文字コード入門</h1>
+                <p class="subtitle">文字集合・符号化方式・Shift_JIS・windows-31j・Unicode・UTF-8・変換・MJ+</p>
                 """);
         h.append("""
-                <p class="lead-text">日本語の文字コードを、文字集合と符号化方式の両面から見比べるための資料。次の内容をまとめている。</p>
-                <ul class="lead-list">
-                <li><b>文字集合と符号化方式</b>：どの符号化方式がどの文字集合を扱うかの対応表と、同じ文字を各方式で書いたバイト列</li>
-                <li><b>Shift_JIS と windows-31j</b>：バイト列をデコードしたときにどの Unicode の文字になるか。windows-31j が拡張した範囲を色で示す</li>
-                <li><b>JIS の区点</b>：1〜120 区に何が割り当てられているかの全体図</li>
-                <li><b>UTF-8</b>：コードポイントからバイト列への変換規則と、Shift_JIS 系とのバイト数の違い</li>
-                <li><b>Unicode</b>：17 の面と BMP の使い道。どこが文字・私用領域・未割り当てか</li>
-                <li><b>MJ 文字と MJ+</b>：行政で使う大きな文字集合と、Unicode で表すときの注意</li>
-                </ul>
+                <p class="lead-text">日本語の文字コードを、文字集合と符号化方式の両面から学ぶための資料。5 部に分けてまとめている。</p>
+                <ol class="lead-list">
+                <li><b>基礎</b>：文字集合・符号化方式・文字コードという言葉の違いと、どの符号化方式がどの文字集合を使うかの対応表</li>
+                <li><b>JIS と Shift_JIS 系</b>：文字集合 JIS X 0208 の区点と、それを Shift_JIS・windows-31j でバイト列にした表。
+                windows-31j が拡張した範囲と、2 つの方式の違いも示す</li>
+                <li><b>Unicode と UTF-8</b>：文字集合 Unicode の面と BMP の使い道と、それを UTF-8 でバイト列にする規則</li>
+                <li><b>変換の注意点</b>：符号化方式を変換するときに起きる文字化け・文字の欠落・バイト列の変化と、その防ぎ方</li>
+                <li><b>行政の文字</b>：MJ 文字と MJ+。Shift_JIS 系に入りきらない大きな文字集合と、Unicode で表すときの注意</li>
+                </ol>
                 """);
         h.append("<p class=\"lead-text\">表と数値は手書きではなく、Java の <code>Charset</code> と Unicode のデータ（JDK ")
                 .append(esc(System.getProperty("java.version")))
                 .append("）から <code>MappingTable.java</code> で生成した。MJ 文字と MJ+ の説明は公開資料による。</p>\n");
 
         h.append("""
-                <nav class="toc" aria-label="目次"><b>目次</b>
-                <span class="tgroup">基礎</span>
-                <a href="#schemes" data-legend="none">文字集合と符号化方式</a>
-                <span class="tgroup">Shift_JIS・windows-31j</span>
-                <a href="#legend" data-legend="sjis">凡例</a>
-                <a href="#overview" data-legend="sjis">全体図：1 バイト目</a>
-                <a href="#kuten" data-legend="kuten">区点の全体図</a>
+                <nav class="toc" aria-label="目次"><b>CONTENTS</b>
+                <span class="tgroup">01　基礎</span>
+                <a href="#basics" data-legend="none">文字集合・符号化方式・文字コード</a>
+                <a href="#schemes" data-legend="none">文字集合と符号化方式の対応表</a>
+                <span class="tgroup">02　JIS と Shift_JIS 系</span>
+                <a href="#kuten" data-legend="kuten">JIS X 0208 の区点</a>
+                <a href="#overview" data-legend="sjis">Shift_JIS 系の 1 バイト目</a>
+                <a class="sub" href="#legend" data-legend="sjis">表の色分け</a>
                 <a href="#single" data-legend="sjis">1 バイト文字</a>
                 <a href="#double" data-legend="sjis">2 バイト文字</a>
                 <a class="sub" href="#double-ext" data-legend="sjis">windows-31j の拡張</a>
                 <a class="sub" href="#double-jis" data-legend="sjis">JIS X 0208</a>
-                <span class="tgroup">Unicode</span>
-                <a href="#utf8" data-legend="none">コードポイントと UTF-8</a>
+                <a href="#sjis-w31j" data-legend="none">Shift_JIS と windows-31j の違い</a>
+                <span class="tgroup">03　Unicode と UTF-8</span>
                 <a href="#umap" data-legend="unicode">Unicode の全体図</a>
                 <a class="sub" href="#planes-map" data-legend="unicode">面ごとの全体図</a>
-                <a href="#unicode" data-legend="none">Unicode から見た差分</a>
-                <span class="tgroup">行政の文字</span>
+                <a href="#utf8" data-legend="none">コードポイントと UTF-8</a>
+                <span class="tgroup">04　変換の注意点</span>
+                <a href="#convert" data-legend="none">文字コード変換の注意点</a>
+                <a class="sub" href="#convert-check" data-legend="none">変換するときの確認項目</a>
+                <span class="tgroup">05　行政の文字</span>
                 <a href="#mj" data-legend="none">MJ 文字と MJ+</a>
                 """);
         h.append("</nav>\n").append(sideLegend());
+        // 第 1 部から順に、文字集合 → その符号化方式 の順で並べる
+        part(h, "part-basics", "PART 01", "基礎");
+        renderBasics(h);
         renderSchemes(h);
-        renderLegend(h, singleByte, doubleByte);
-        renderOverview(h, singleByte, doubleByte);
+        part(h, "part-jis", "PART 02", "JIS と Shift_JIS 系");
         renderKutenMap(h, doubleByte);
+        renderOverview(h, singleByte, doubleByte);
         renderSingleByte(h, singleByte);
         renderDoubleByte(h, doubleByte);
-        renderUtf8(h, singleByte, doubleByte);
-        renderUnicodeMap(h);
         renderUnicodeSide(h, singleByte, doubleByte);
+        part(h, "part-unicode", "PART 03", "Unicode と UTF-8");
+        renderUnicodeMap(h);
+        renderUtf8(h, singleByte, doubleByte);
+        part(h, "part-convert", "PART 04", "変換の注意点");
+        renderConversion(h, doubleByte);
+        part(h, "part-mj", "PART 05", "行政の文字");
         renderMj(h, doubleByte);
 
         h.append("</main>\n<script>\n").append(JS).append("</script>\n</body>\n</html>\n");
         return h.toString();
     }
 
+    /** 部の見出し。章（h2）をまとめる区切りとして置く。 */
+    private static void part(StringBuilder h, String id, String number, String title) {
+        h.append("<div class=\"part\" id=\"").append(id).append("\"><span>").append(number).append("</span>")
+                .append(esc(title)).append("</div>\n");
+    }
+
     /** サイドパネルの凡例。見ている節に合わせて、JS で表示するブロックを切り替える。 */
     private static String sideLegend() {
         StringBuilder l = new StringBuilder("<aside class=\"side-legend\" aria-label=\"凡例\">"
-                + "<button type=\"button\" class=\"sl-title\" aria-expanded=\"true\"><span>凡例</span><span class=\"sl-caret\"></span>"
+                + "<button type=\"button\" class=\"sl-title\" aria-expanded=\"true\"><span>LEGEND</span><span class=\"sl-caret\"></span>"
                 + "</button>\n<div class=\"sl-body\">\n");
 
         l.append("<div class=\"sl-block\" data-legend=\"sjis\">\n");
@@ -256,6 +273,196 @@ public class MappingTable {
         return l.append("</div>\n</aside>\n").toString();
     }
 
+    // ---- 文字コード変換の注意点 ----
+
+    /** 各コードポイントを U+XXXX で空白区切りにする。 */
+    private static String cps(String s) {
+        StringBuilder sb = new StringBuilder();
+        s.codePoints().forEach(c -> sb.append(sb.isEmpty() ? "" : " ").append(String.format("U+%04X", c)));
+        return sb.toString();
+    }
+
+    private static String bytesOf(String s, Charset cs) {
+        return hexBytes(toInts(s.getBytes(cs)));
+    }
+
+    private static String decodeLenient(int[] bytes, Charset cs) {
+        byte[] b = new byte[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            b[i] = (byte) bytes[i];
+        }
+        return new String(b, cs);
+    }
+
+    /** 文字コードを変換するときに起きる問題と防ぎ方。例の値はすべて JDK で求める。 */
+    private static void renderConversion(StringBuilder h, Map<Integer, List<Cell>> doubleByte) {
+        Charset utf8 = java.nio.charset.StandardCharsets.UTF_8;
+
+        h.append("""
+                <section id="convert">
+                <h2>文字コード変換の注意点</h2>
+                <p>文字コードの変換は「バイト列 → 文字（デコード）」と「文字 → バイト列（エンコード）」の 2 段で行う。
+                Java では、どちらの段でも問題が起きたときに例外を出さず、黙って別の文字に置き換えるのが既定の動作である。
+                そのため、変換の失敗はデータが欠けてから気付くことが多い。</p>
+                """);
+
+        // 1. 符号化方式の指定を省略しない
+        h.append("<h3>1. 符号化方式を必ず指定する</h3>\n")
+                .append("<p><code>new String(bytes)</code>・<code>getBytes()</code>・<code>FileReader</code> のように符号化方式を省略すると、"
+                        + "実行環境の既定値が使われる。JDK 18 からは既定値が UTF-8 に統一された（JEP 400）ので、"
+                        + "Windows で作った Shift_JIS のファイルを省略形で読むと化ける。この環境の既定値は <code>")
+                .append(esc(Charset.defaultCharset().name())).append("</code>。</p>\n");
+        String word = "文字";
+        h.append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>書いた方式</th><th>読んだ方式</th><th>バイト列</th>"
+                + "<th>結果</th></tr></thead>\n<tbody>\n");
+        Charset[][] pairs = {{W31J, utf8}, {utf8, W31J}, {W31J, W31J}};
+        for (Charset[] pr : pairs) {
+            byte[] b = word.getBytes(pr[0]);
+            h.append("<tr><td>").append(pr[0].name()).append("</td><td>").append(pr[1].name())
+                    .append("</td><td class=\"mono bytes\">").append(hexBytes(toInts(b))).append("</td><td class=\"glyph\">")
+                    .append(esc(new String(b, pr[1]))).append("</td></tr>\n");
+        }
+        h.append("</tbody>\n</table></div>\n")
+                .append("<p class=\"note\">� （U+FFFD）は、デコードできなかったバイトの代わりに入る置換文字。"
+                        + "一度置き換わると元のバイト列には戻せない。</p>\n");
+
+        // 2. 表せない文字は黙って置き換わる
+        int[] lone = {0x82};
+        h.append("<h3>2. 変換できない文字は黙って置き換わる</h3>\n")
+                .append("<p><code>getBytes</code> と <code>new String</code> は、変換できない文字を例外にせず置き換える。"
+                        + "エンコードでは <code>?</code>（3F）に、デコードでは <code>�</code>（U+FFFD）になる。</p>\n")
+                .append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>操作</th><th>入力</th><th>結果</th></tr></thead>\n<tbody>\n")
+                .append("<tr><td>windows-31j へエンコード</td><td class=\"glyph\">🍣</td><td class=\"mono\">")
+                .append(bytesOf("🍣", W31J)).append("（?）</td></tr>\n")
+                .append("<tr><td>windows-31j へエンコード</td><td class=\"glyph\">𠮷</td><td class=\"mono\">")
+                .append(bytesOf("𠮷", W31J)).append("（?）</td></tr>\n")
+                .append("<tr><td>windows-31j でデコード（2 バイト文字の 1 バイト目だけ）</td><td class=\"mono\">")
+                .append(hexBytes(lone)).append("</td><td class=\"mono\">").append(cps(decodeLenient(lone, W31J)))
+                .append("</td></tr>\n</tbody>\n</table></div>\n")
+                .append("<p>失敗を検出したいときは、<code>Charset.newEncoder()</code> と <code>newDecoder()</code> を使う。"
+                        + "既定で <code>CodingErrorAction.REPORT</code> になっており、変換できないと "
+                        + "<code>CharacterCodingException</code> を投げる。変換前に <code>canEncode</code> で調べることもできる。</p>\n")
+                .append("""
+                        <pre><code>CharsetEncoder enc = Charset.forName("windows-31j").newEncoder();
+                        enc.canEncode("🍣");                 // false
+                        enc.encode(CharBuffer.wrap("🍣"));   // UnmappableCharacterException</code></pre>
+                        """);
+
+        // 3. Shift_JIS と windows-31j の取り違え
+        List<Cell> diffs = doubleByte.values().stream().flatMap(List::stream).filter(c -> c.cat == Cat.DIFF).toList();
+        h.append("<h3>3. Shift_JIS と windows-31j を取り違えない</h3>\n")
+                .append("<p>どちらも「Shift_JIS」と呼ばれることが多いが、Java では別の符号化方式で、")
+                .append(diffs.size()).append(" 個のバイト列が別の Unicode の文字になる。"
+                        + "Shift_JIS で読んだ文字を windows-31j で書くと、このうち ")
+                .append(diffs.stream().filter(c -> encodeStrict(W31J, c.sjis) == null).count())
+                .append(" 個は書く先がなく <code>?</code> になる（波ダッシュ問題）。"
+                        + "残りは windows-31j が元のバイト列に戻してくれるが、Java 以外の変換表でも同じとは限らない。"
+                        + "Windows で作られたデータは、ふつう windows-31j（MS932）で読み書きする。</p>\n")
+                .append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>バイト列</th><th>Shift_JIS で読む</th>"
+                        + "<th>windows-31j で読む</th><th>Shift_JIS で読んで windows-31j で書く</th></tr></thead>\n<tbody>\n");
+        for (Cell c : diffs) {
+            h.append("<tr><td class=\"mono\">").append(hexBytes(c.bytes)).append("</td><td><span class=\"glyph\">")
+                    .append(esc(c.sjis)).append("</span> <span class=\"mono\">U+").append(cp(c.sjis)).append("</span></td><td><span class=\"glyph\">")
+                    .append(esc(c.w31j)).append("</span> <span class=\"mono\">U+").append(cp(c.w31j)).append("</span></td><td class=\"mono\">")
+                    .append(bytesOf(c.sjis, W31J)).append("</td></tr>\n");
+        }
+        h.append("</tbody>\n</table></div>\n");
+
+        // 4. 読んで書き戻すとバイト列が変わる
+        List<Cell> changed = new ArrayList<>();
+        doubleByte.values().stream().flatMap(List::stream).filter(c -> c.w31j != null).forEach(c -> {
+            int[] back = encodeStrict(W31J, c.w31j);
+            if (back != null && !java.util.Arrays.equals(back, c.bytes)) {
+                changed.add(c);
+            }
+        });
+        h.append("<h3>4. 読んで書き戻すとバイト列が変わることがある</h3>\n")
+                .append("<p>windows-31j では同じ文字が複数のバイト列にあるので、読んでから書き戻すと別のバイト列になる文字が ")
+                .append(changed.size()).append(" 個ある。文字としては同じなので画面では気付かないが、"
+                        + "ファイルの差分比較・ハッシュ値・バイト列での検索が一致しなくなる。詳しくは"
+                        + "<a href=\"#sjis-w31j\">Shift_JIS と windows-31j の違い</a>を参照。</p>\n")
+                .append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>元のバイト列</th><th>文字</th>"
+                        + "<th>書き戻したバイト列</th></tr></thead>\n<tbody>\n");
+        for (Cell c : changed.subList(0, Math.min(5, changed.size()))) {
+            h.append("<tr><td class=\"mono\">").append(hexBytes(c.bytes)).append("</td><td class=\"glyph\">").append(esc(c.w31j))
+                    .append("</td><td class=\"mono\">").append(hexBytes(encodeStrict(W31J, c.w31j))).append("</td></tr>\n");
+        }
+        h.append("</tbody>\n</table></div>\n<p class=\"note\">先頭の 5 個だけ示した。</p>\n");
+
+        // 5. バイト数と文字数
+        String ai = "あい";
+        byte[] aiUtf8 = ai.getBytes(utf8);
+        int[] cut = toInts(java.util.Arrays.copyOf(aiUtf8, 4));
+        String kana = "ｱｲｳ";
+        h.append("<h3>5. バイト数で切ると文字の途中で切れる</h3>\n")
+                .append("<p>同じ文字でも、符号化方式によってバイト数が変わる。データベースの列の長さや通信の電文長をバイト数で決めていると、"
+                        + "変換後にあふれたり、切り詰めたときに文字の途中で切れたりする。</p>\n")
+                .append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>文字列</th><th>windows-31j</th><th>UTF-8</th>"
+                        + "</tr></thead>\n<tbody>\n");
+        for (String t : List.of(kana, "漢字", "🍣")) {
+            h.append("<tr><td class=\"glyph\">").append(esc(t)).append("</td><td>");
+            int[] w = encodeStrict(W31J, t);
+            h.append(w == null ? "表せない" : w.length + " バイト").append("</td><td>").append(t.getBytes(utf8).length)
+                    .append(" バイト</td></tr>\n");
+        }
+        h.append("</tbody>\n</table></div>\n")
+                .append("<p>「").append(ai).append("」の UTF-8（<span class=\"mono\">").append(hexBytes(toInts(aiUtf8)))
+                .append("</span>）を 4 バイトで切ると <span class=\"mono\">").append(hexBytes(cut)).append("</span> になり、読むと「")
+                .append(esc(decodeLenient(cut, utf8))).append("」になる。切り詰めるときは、バイト数ではなく文字（コードポイント）の境目で切る。</p>\n");
+
+        // 6. BOM
+        int[] bomA = {0xEF, 0xBB, 0xBF, 0x41};
+        String bomRead = decodeLenient(bomA, utf8);
+        h.append("<h3>6. UTF-8 の BOM は Java では取り除かれない</h3>\n")
+                .append("<p>Windows のメモ帳や Excel は、UTF-8 のファイルの先頭に BOM（<span class=\"mono\">EF BB BF</span>）を付けることがある。"
+                        + "Java の UTF-8 のデコーダは BOM を取り除かないので、先頭に U+FEFF が残る。</p>\n")
+                .append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>項目</th><th>値</th></tr></thead>\n<tbody>\n")
+                .append("<tr><td>バイト列</td><td class=\"mono\">").append(hexBytes(bomA)).append("</td></tr>\n")
+                .append("<tr><td>UTF-8 で読んだ文字列のコードポイント</td><td class=\"mono\">").append(cps(bomRead)).append("</td></tr>\n")
+                .append("<tr><td><code>length()</code></td><td class=\"num\">").append(bomRead.length()).append("</td></tr>\n")
+                .append("<tr><td><code>equals(\"A\")</code></td><td class=\"mono\">").append(bomRead.equals("A")).append("</td></tr>\n")
+                .append("</tbody>\n</table></div>\n")
+                .append("<p>CSV の先頭の列名が一致しない、といった形で表に出る。先頭の U+FEFF を取り除いてから使う。</p>\n");
+
+        // 7. 正規化
+        String ga = "が";
+        String gaNfd = java.text.Normalizer.normalize(ga, java.text.Normalizer.Form.NFD);
+        int[] gaNfdW31j = encodeStrict(W31J, gaNfd);
+        h.append("<h3>7. 見た目が同じでもコードポイントが違う（正規化）</h3>\n")
+                .append("<p>Unicode では「が」を 1 つのコードポイントでも、「か」＋濁点の 2 つでも表せる。"
+                        + "macOS のファイル名などは後者（NFD）になることがある。後者は windows-31j に変換できず、文字列の比較も一致しない。</p>\n")
+                .append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>形</th><th>コードポイント</th><th>windows-31j</th>"
+                        + "</tr></thead>\n<tbody>\n")
+                .append("<tr><td>NFC（合成済み）</td><td class=\"mono\">").append(cps(ga)).append("</td><td class=\"mono\">")
+                .append(hexBytes(encodeStrict(W31J, ga))).append("</td></tr>\n")
+                .append("<tr><td>NFD（分解）</td><td class=\"mono\">").append(cps(gaNfd)).append("</td><td>")
+                .append(gaNfdW31j == null ? "変換できない" : "<span class=\"mono\">" + hexBytes(gaNfdW31j) + "</span>").append("</td></tr>\n")
+                .append("</tbody>\n</table></div>\n")
+                .append("<p>変換や比較の前に <code>Normalizer.normalize(s, Normalizer.Form.NFC)</code> でそろえる。"
+                        + "ただし NFKC は「ｱ」を「ア」に、「①」を「1」にするなど文字そのものを変えるので、目的を確かめてから使う。</p>\n");
+
+        // 8. 5C 問題
+        h.append("<h3>8. 2 バイト目の 5C（\\）に注意する</h3>\n")
+                .append("<p>Shift_JIS 系では「表」が <span class=\"mono\">").append(bytesOf("表", W31J))
+                .append("</span> のように、2 バイト目に <code>\\</code> と同じ 5C が来る文字がある。"
+                        + "バイト列のまま <code>\\</code> を探したり、エスケープ文字として扱ったりする処理（古い C のプログラム・"
+                        + "CSV や SQL の手作りの処理）は、文字の途中を誤って拾う。文字列にデコードしてから処理する。</p>\n");
+
+        h.append("""
+                <h3 id="convert-check">変換するときの確認項目</h3>
+                <ul>
+                <li>読む側・書く側の両方で、符号化方式を明示しているか</li>
+                <li>相手の「Shift_JIS」は Shift_JIS か windows-31j か（Windows 由来ならふつう windows-31j）</li>
+                <li>変換できない文字を、例外・ログ・置き換え表のどれで扱うか決めているか（黙って <code>?</code> にしない）</li>
+                <li>長さの上限がバイト数か文字数か。変換後のバイト数で収まるか</li>
+                <li>UTF-8 の BOM の有無と、読むときに取り除くか</li>
+                <li>Unicode の正規化（NFC / NFD）をそろえているか</li>
+                <li>BMP の外の文字（サロゲートペア）や異体字セレクタを、文字数の数え方や切り詰めで壊していないか</li>
+                </ul>
+                </section>
+                """);
+    }
+
     // ---- 文字集合と符号化方式 ----
 
     /** 文字集合 × 符号化方式の対応表の 1 行。cells は SCHEME_SETS と同じ順。 */
@@ -263,15 +470,15 @@ public class MappingTable {
     }
 
     private static final List<String> SCHEME_SETS = List.of(
-            "ASCII", "JIS X 0201 ローマ字", "JIS X 0201 カタカナ", "JIS X 0208", "JIS X 0212", "JIS X 0213",
-            "Windows の拡張", "Unicode");
+            "ASCII", "JIS X 0201\nローマ字", "JIS X 0201\nカタカナ", "JIS X 0208", "JIS X 0212", "JIS X 0213",
+            "Windows\nの拡張", "Unicode");
 
     /** 規格の定義なので手で書く。○ は直接扱う、(○) は Unicode に含まれるので表せる。 */
     private static final List<Scheme> SCHEMES = List.of(
             new Scheme("US-ASCII", "US-ASCII",
                     new String[] {"○", "", "", "", "", "", "", ""}, "1", "—"),
             new Scheme("ISO-2022-JP（JIS コード）", "ISO-2022-JP",
-                    new String[] {"○", "○", "△", "○", "", "", "", ""}, "1〜2（エスケープシーケンスで切り替える）", "出る"),
+                    new String[] {"○", "○", "△", "○", "", "", "", ""}, "1〜2 ※", "出る"),
             new Scheme("EUC-JP", "EUC-JP",
                     new String[] {"○", "", "○", "○", "○", "", "", ""}, "1〜3", "出ない"),
             new Scheme("Shift_JIS", "Shift_JIS",
@@ -317,32 +524,122 @@ public class MappingTable {
         }
     }
 
+    /** 文字集合・符号化方式・文字コードという言葉の整理。例のバイト列は JDK で求める。 */
+    private static void renderBasics(StringBuilder h) {
+        String kan = "漢";
+        int[] kanSjis = encodeStrict(SJIS, kan);
+        int[] kanKuten = kuten(kanSjis[0], kanSjis[1]);
+        String kanKutenText = kanKuten[0] + " 区 " + kanKuten[1] + " 点";
+
+        h.append("""
+                <section id="basics">
+                <h2>文字集合・符号化方式・文字コード</h2>
+                <p>コンピュータは文字をそのまま覚えられないので、文字をバイト列にして保存・送信する。
+                その変換は 2 段に分けて考えると見通しがよい。</p>
+                <ol>
+                <li><b>文字 → 番号</b>：どの文字を扱い、それぞれに何番を振るかを決める。これが<b>文字集合</b></li>
+                <li><b>番号 → バイト列</b>：振った番号を、実際のバイトの並びにする規則を決める。これが<b>符号化方式</b></li>
+                </ol>
+                <p>「文字コード」は、この 2 つをはっきり分けずに指す日常の言葉である。</p>
+                <h3>文字集合</h3>
+                <p>扱う文字の範囲と、各文字の番号を決めたもの。JIS の用語では<b>符号化文字集合</b>
+                （coded character set）と呼ぶ。番号の振り方は文字集合ごとに違う。</p>
+                <ul>
+                <li><b>ASCII</b>：英数字と記号の 128 文字。番号は 0〜127</li>
+                <li><b>JIS X 0201</b>：ASCII とほぼ同じローマ字と、半角カタカナ。番号は 0〜255 の 1 バイト</li>
+                <li><b>JIS X 0208</b>：ひらがな・カタカナ・漢字など。94 × 94 のマスに並べ、<b>区点番号</b>（何区の何点か）で表す</li>
+                <li><b>JIS X 0212・JIS X 0213</b>：JIS X 0208 に入らなかった漢字を足したもの</li>
+                <li><b>Unicode</b>：世界中の文字を 1 つにまとめたもの。番号は<b>コードポイント</b>（U+0000〜U+10FFFF）</li>
+                </ul>
+                <p>文字集合に入っていない文字は、その文字集合を使う限りどう工夫しても表せない。
+                windows-31j で 🍣 が <code>?</code> になるのはこのためである。</p>
+                <h3>符号化方式</h3>
+                <p>文字集合の番号をバイト列にする規則。JIS の用語では<b>文字符号化方式</b>（character encoding scheme）と呼ぶ。
+                同じ文字集合でも、符号化方式が違えばバイト列が変わる。主な作りは 3 通りある。</p>
+                <ul>
+                <li><b>固定長</b>：どの文字も同じバイト数にする。UTF-32 は常に 4 バイト</li>
+                <li><b>可変長</b>：1 バイト目の値で、その文字が何バイトかを判断する。Shift_JIS・EUC-JP・UTF-8・UTF-16</li>
+                <li><b>切り替え式</b>：エスケープシーケンスで「ここから先はどの文字集合か」を切り替える。ISO-2022-JP</li>
+                </ul>
+                <p>1 つの符号化方式が、複数の文字集合を組み合わせて使うことも多い。
+                Shift_JIS は 1 バイト文字に JIS X 0201 を、2 バイト文字に JIS X 0208 を使う。</p>
+                """);
+
+        h.append("<h3>例：「漢」が文字集合と符号化方式を経てバイト列になるまで</h3>\n")
+                .append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>文字</th><th>文字集合</th><th>番号</th>"
+                        + "<th>符号化方式</th><th>バイト列</th></tr></thead>\n<tbody>\n");
+        String[][] flow = {
+                {"JIS X 0208", kanKutenText, "Shift_JIS"},
+                {"JIS X 0208", kanKutenText, "EUC-JP"},
+                {"JIS X 0208", kanKutenText, "ISO-2022-JP"},
+                {"Unicode", "U+" + cp(kan), "UTF-8"},
+                {"Unicode", "U+" + cp(kan), "UTF-16BE"},
+                {"Unicode", "U+" + cp(kan), "UTF-32BE"}};
+        for (String[] f : flow) {
+            h.append("<tr><td class=\"glyph\">").append(kan).append("</td><td>").append(f[0])
+                    .append("</td><td class=\"mono\">").append(f[1]).append("</td><td>").append(f[2])
+                    .append("</td><td class=\"mono bytes\">").append(hexBytes(encodeStrict(Charset.forName(f[2]), kan)))
+                    .append("</td></tr>\n");
+        }
+        h.append("</tbody>\n</table></div>\n")
+                .append("<p class=\"note\">番号が同じでも、符号化方式によってバイト列が変わる。"
+                        + "ISO-2022-JP のバイト列の前後にある <span class=\"mono\">1B 24 42</span> と "
+                        + "<span class=\"mono\">1B 28 42</span> は、文字集合を切り替えるエスケープシーケンス。</p>\n");
+
+        // 文字化けの例：UTF-8 で書いたバイト列を windows-31j で読む
+        String word = "文字";
+        byte[] utf8 = word.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        String garbled = new String(utf8, W31J);
+        h.append("""
+                <h3>文字コード</h3>
+                <p>「文字コード」は日常の言葉で、文脈によって次のどれかを指す。</p>
+                <ul>
+                <li>文字集合のこと（「JIS X 0208 という文字コード」）</li>
+                <li>符号化方式のこと（「UTF-8 で保存する」）</li>
+                <li>1 文字ごとの番号やバイト列のこと（「あの文字コードは 3042」）</li>
+                </ul>
+                <p>実際によく目にする名前（Shift_JIS・EUC-JP・UTF-8 など）は<b>符号化方式の名前</b>で、
+                どの文字集合を使うかもその名前で決まる。HTML の <code>&lt;meta charset&gt;</code>、HTTP の <code>charset=</code>、
+                Java の <code>Charset</code> が指定しているのも符号化方式である。</p>
+                <h3>なぜ区別するのか</h3>
+                <p>文字の問題は、たいていどちらの段で起きたかで原因と対策が分かれる。</p>
+                <ul>
+                """);
+        h.append("<li><b>符号化方式の取り違え（文字化け）</b>：書いたときと違う符号化方式で読むと、文字集合に入っている文字でも化ける。"
+                        + "「").append(word).append("」を UTF-8 で書いた <span class=\"mono\">").append(hexBytes(toInts(utf8)))
+                .append("</span> を windows-31j で読むと「").append(esc(garbled)).append("」になる（� は文字にならなかったバイト）。"
+                        + "対策は、読む側と書く側で符号化方式をそろえること</li>\n")
+                .append("<li><b>文字集合に入っていない（表せない）</b>：符号化方式が正しくても、文字集合にない文字は書けない。"
+                        + "「🍣」を windows-31j に変換すると <span class=\"mono\">").append(hexBytes(toInts("🍣".getBytes(W31J))))
+                .append("</span>（<code>?</code>）になる。対策は、その文字を含む文字集合（Unicode）の符号化方式に変えること</li>\n")
+                .append("</ul>\n</section>\n");
+    }
+
     private static void renderSchemes(StringBuilder h) {
         h.append("""
                 <section id="schemes">
-                <h2>文字集合と符号化方式</h2>
-                <p>「文字コード」という言葉は、2 つの別のものをまとめて指している。</p>
-                <ul>
-                <li><b>文字集合</b>（符号化文字集合）：どの文字を扱うかと、各文字に振る番号を決めたもの。
-                JIS X 0208 なら区点番号（「漢」は 20 区 33 点）、Unicode ならコードポイント（「漢」は U+6F22）</li>
-                <li><b>符号化方式</b>：その番号を、ファイルや通信で使うバイト列にする規則。
-                同じ JIS X 0208 の「漢」でも、Shift_JIS なら 8A BF、EUC-JP なら B4 C1 になる</li>
-                </ul>
-                <p>1 つの符号化方式が複数の文字集合を組み合わせて使うことが多い。
-                Shift_JIS は JIS X 0201（1 バイト）と JIS X 0208（2 バイト）を、UTF-8 は Unicode だけを使う。
-                Java の <code>Charset</code> は文字集合ではなく符号化方式に当たる。</p>
+                <h2>文字集合と符号化方式の対応表</h2>
+                <p>前の章の整理をもとに、主な符号化方式がどの文字集合を使うかをまとめる。第 2 部以降で、このうち Shift_JIS 系と UTF-8 を詳しく見る。</p>
                 <h3>どの符号化方式がどの文字集合を扱うか</h3>
                 """);
         h.append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>符号化方式</th>");
-        SCHEME_SETS.forEach(s -> h.append("<th>").append(esc(s)).append("</th>"));
-        h.append("<th>1 文字のバイト数</th><th>ASCII の値が 2 バイト目以降に出るか</th><th>Java の名前</th></tr></thead>\n<tbody>\n");
+        SCHEME_SETS.forEach(s -> h.append("<th class=\"c\">").append(esc(s).replace("\n", "<br>")).append("</th>"));
+        h.append("</tr></thead>\n<tbody>\n");
         for (Scheme s : SCHEMES) {
             h.append("<tr><td>").append(esc(s.name)).append("</td>");
             for (String c : s.cells) {
                 h.append(c.isEmpty() ? "<td class=\"x\">—</td>" : "<td class=\"c\">" + esc(c) + "</td>");
             }
-            h.append("<td>").append(esc(s.bytes)).append("</td><td>").append(esc(s.asciiInTrail))
-                    .append("</td><td class=\"mono\">").append(esc(s.javaName)).append("</td></tr>\n");
+            h.append("</tr>\n");
+        }
+        h.append("</tbody>\n</table></div>\n");
+
+        // 性質は別の表に分け、上の表の列を文字集合だけにする
+        h.append("<h3>符号化方式の性質</h3>\n<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>符号化方式</th>"
+                + "<th>1 文字のバイト数</th><th>ASCII の値が 2 バイト目以降に出るか</th><th>Java の名前</th></tr></thead>\n<tbody>\n");
+        for (Scheme s : SCHEMES) {
+            h.append("<tr><td>").append(esc(s.name)).append("</td><td>").append(esc(s.bytes)).append("</td><td>")
+                    .append(esc(s.asciiInTrail)).append("</td><td class=\"mono\">").append(esc(s.javaName)).append("</td></tr>\n");
         }
         h.append("</tbody>\n</table></div>\n");
         h.append("""
@@ -350,9 +647,10 @@ public class MappingTable {
                 <li>○：その文字集合を直接使う。(○)：Unicode がその文字集合の文字を含んでいるので表せる。—：表せない</li>
                 <li>Shift_JIS 系の 1 バイト部分は、規格上は JIS X 0201 ローマ字（5C が ¥、7E が ‾）。
                 JDK の Shift_JIS と x-SJIS_0213 は 5C と 7E を ASCII の \\ と ~ として扱うので △ とした。windows-31j は 1 バイト部分が ASCII</li>
+                <li>※ ISO-2022-JP は 1 文字が 1〜2 バイトで、文字集合を切り替えるたびにエスケープシーケンス（3 バイト）が加わる</li>
                 <li>ISO-2022-JP の規格（RFC 1468）は半角カナを含まない。JDK は ESC ( I で切り替えて読み書きできるので △ とした</li>
                 <li>JIS X 0213 は JIS X 0208 の文字をすべて含み、第 3・第 4 水準などを加えたもの。
-                Windows の拡張は NEC 特殊文字・NEC 選定 IBM 拡張文字・IBM 拡張文字で、下の「2 バイト文字」の節に詳しい</li>
+                Windows の拡張は NEC 特殊文字・NEC 選定 IBM 拡張文字・IBM 拡張文字で、第 2 部の「2 バイト文字」の章に詳しい</li>
                 <li>「ASCII の値が 2 バイト目以降に出る」方式では、バイト単位で <code>\\</code> や <code>/</code> を探す処理が
                 文字の途中を誤って拾うことがある（下の表の「表」を参照）</li>
                 </ul>
@@ -379,12 +677,15 @@ public class MappingTable {
         h.append("</tbody>\n</table></div>\n</section>\n");
     }
 
+    /** 1 バイト文字・2 バイト文字の表の色分け。1 バイト目の章の最後の節として出す。 */
     private static void renderLegend(StringBuilder h, List<Cell> singleByte, Map<Integer, List<Cell>> doubleByte) {
         Map<Cat, Integer> counts = new EnumMap<>(Cat.class);
         singleByte.forEach(c -> counts.merge(c.cat, 1, Integer::sum));
         doubleByte.values().forEach(cells -> cells.forEach(c -> counts.merge(c.cat, 1, Integer::sum)));
 
-        h.append("<section id=\"legend\">\n<h2>凡例</h2>\n<table class=\"legend\">\n")
+        h.append("<h3 id=\"legend\">表の色分け</h3>\n")
+                .append("<p>この先の「1 バイト文字」「2 バイト文字」の表は、Shift_JIS と windows-31j で読んだ結果を比べて、次のように色分けしている。</p>\n")
+                .append("<table class=\"legend\">\n")
                 .append("<thead><tr><th>色</th><th>分類</th><th>意味</th><th>数</th></tr></thead>\n<tbody>\n");
         for (Cat cat : Cat.values()) {
             if (cat == Cat.NONE) {
@@ -399,15 +700,16 @@ public class MappingTable {
                 <p class="note">マスにカーソルを合わせると、バイト列・区点番号・Unicode の名前・UTF-8 のバイト列が出る。
                 「対応先が違う」マスは <span class="mono">Shift_JIS → windows-31j</span> の順に 2 つの文字を並べている。</p>
                 <label class="toggle"><input type="checkbox" id="only-diff"> 共通の文字を薄くして、差分だけを目立たせる</label>
-                </section>
                 """);
     }
 
     /** 1 バイト目 00〜FF が何に使われているかの全体図。 */
     private static void renderOverview(StringBuilder h, List<Cell> singleByte, Map<Integer, List<Cell>> doubleByte) {
-        h.append("<section id=\"overview\">\n<h2>全体図：1 バイト目の使い道</h2>\n")
-                .append("<p>1 バイト目の値だけで、1 バイト文字か、2 バイト文字の始まりかが決まる。"
-                        + "2 バイト文字のマスを押すと、その 1 バイト目の表に移動する。</p>\n")
+        h.append("<section id=\"overview\">\n<h2>Shift_JIS 系の 1 バイト目</h2>\n")
+                .append("<p>Shift_JIS と windows-31j は、1 バイト文字に JIS X 0201 を、2 バイト文字に前の章の区点を使う符号化方式。"
+                        + "1 バイト目の値だけで、1 バイト文字か、2 バイト文字の始まりかが決まる。</p>\n")
+                .append("<h3>1 バイト目の使い道</h3>\n")
+                .append("<p>2 バイト文字のマスを押すと、その 1 バイト目の表に移動する。</p>\n")
                 .append("<div class=\"scroll\"><table class=\"grid overview\">\n");
         appendHeaderRow(h);
         for (int hi = 0; hi < 16; hi++) {
@@ -442,8 +744,9 @@ public class MappingTable {
                 <li><span class="swatch gaiji"></span> F0〜F9：外字。JIS X 0208 の 94 区より外側</li>
                 <li><span class="swatch ibm"></span> FA〜FC：IBM 拡張文字（髙・﨑 など）。JIS X 0208 の 94 区より外側</li>
                 </ul>
-                </section>
                 """);
+        renderLegend(h, singleByte, doubleByte);
+        h.append("</section>\n");
     }
 
     /** 全体図での 1 バイト目の色。共通の文字が 1 つでもあれば JIS X 0208 の領域とみなす。 */
@@ -490,8 +793,10 @@ public class MappingTable {
         Map<Integer, Cell> byBytes = new java.util.HashMap<>();
         doubleByte.values().forEach(cells -> cells.forEach(c -> byBytes.put(c.bytes[0] * 256 + c.bytes[1], c)));
 
-        h.append("<section id=\"kuten\">\n<h2>区点の全体図</h2>\n")
-                .append("<p>2 バイト文字を JIS の区点番号で並べた図。縦が区（1〜120）、横が点（1〜94）で、1 マスが 1 文字。"
+        h.append("<section id=\"kuten\">\n<h2>JIS X 0208 の区点</h2>\n")
+                .append("<p>JIS X 0208 は、文字を 94 区 × 94 点のマスに並べた文字集合。各文字の番号は「何区の何点か」（区点番号）で表す。"
+                        + "Shift_JIS 系の 2 バイト文字は、この区点番号を計算でバイト列にしたもの。</p>\n")
+                .append("<p>下の図は、Shift_JIS 系で表せる 2 バイト文字を区点番号で並べたもの。縦が区（1〜120）、横が点（1〜94）で、1 マスが 1 文字。"
                         + "1〜94 区が JIS X 0208 の範囲で、95 区より先は windows-31j が同じ計算式を延長して使っている。"
                         + "マスにカーソルを合わせると文字が出る。区の番号を押すと、その区の表に移動する。</p>\n");
 
@@ -644,7 +949,7 @@ public class MappingTable {
         h.append("<h3>Shift_JIS 系では入りきらない</h3>\n")
                 .append("<p>Shift_JIS 方式で使える 2 バイトの組み合わせは、windows-31j の拡張を含めても ")
                 .append(sjisCells).append(" 通り（1 バイト目 60 通り × 2 バイト目 188 通り）しかない。"
-                        + "上の「区点の全体図」の 120 区 × 94 点がその全部で、6 万〜7 万字はどう並べても収まらない。"
+                        + "第 2 部の「JIS X 0208 の区点」の図の 120 区 × 94 点がその全部で、6 万〜7 万字はどう並べても収まらない。"
                         + "MJ 文字や MJ+ を扱うシステムは、Unicode（UTF-8 や UTF-16）を使うことが前提になる。</p>\n");
 
         h.append("<h3>Unicode で表すときの注意</h3>\n<ul>\n")
@@ -881,7 +1186,7 @@ public class MappingTable {
                 """);
 
         h.append("""
-                <h3>これまでに出てきた文字の場所</h3>
+                <h3>このページに出てくる文字の場所</h3>
                 <div class="scroll"><table class="list">
                 <thead><tr><th>例</th><th>コードポイント</th><th>面</th><th>分類</th></tr></thead>
                 <tbody>
@@ -1037,9 +1342,9 @@ public class MappingTable {
     /** コードポイントから UTF-8 のバイト列への変換規則と、Shift_JIS 系とのバイト数の比較。 */
     private static void renderUtf8(StringBuilder h, List<Cell> singleByte, Map<Integer, List<Cell>> doubleByte) {
         h.append("<section id=\"utf8\">\n<h2>コードポイントと UTF-8</h2>\n")
-                .append("<p>上の表のコードポイント（U+XXXX）は、Unicode の文字の番号。"
-                        + "UTF-8 はこの番号を、大きさに応じて 1〜4 バイトに分けて書く。"
-                        + "各マスにカーソルを合わせると、その文字の UTF-8 のバイト列も出る。</p>\n");
+                .append("<p>UTF-8 は、前の章のコードポイント（U+XXXX）をバイト列にする符号化方式。"
+                        + "番号の大きさに応じて 1〜4 バイトに分けて書く。"
+                        + "第 2 部の表のマスにカーソルを合わせると、その文字の UTF-8 のバイト列も出る。</p>\n");
 
         // 変換規則。例のバイト列は Java の UTF-8 で実際にエンコードして出す
         String[][] rules = {
@@ -1092,9 +1397,11 @@ public class MappingTable {
         h.append("</tbody>\n</table></div>\n</section>\n");
     }
 
-    /** Unicode の側から見た差分。 */
+    /** Shift_JIS と windows-31j の違いを、Unicode の側から見る。 */
     private static void renderUnicodeSide(StringBuilder h, List<Cell> singleByte, Map<Integer, List<Cell>> doubleByte) {
-        h.append("<section id=\"unicode\">\n<h2>Unicode から見た差分</h2>\n");
+        h.append("<section id=\"sjis-w31j\">\n<h2>Shift_JIS と windows-31j の違い</h2>\n")
+                .append("<p>どちらも読んだ文字は Unicode で扱うので、違いは Unicode の側から見ると分かりやすい。"
+                        + "上の表の「対応先が違う」文字のほかに、書くときに問題になるものが 2 つある。</p>\n");
 
         // Shift_JIS では書けるが windows-31j では書けない文字
         CharsetEncoder sjisEnc = SJIS.newEncoder();
@@ -1303,132 +1610,164 @@ public class MappingTable {
 
     private static final String CSS = """
             :root {
-              --bg: #fbfbfa; --fg: #1f2328; --muted: #6a737d; --line: #d8dadd; --head: #f0f1f3;
+              --bg: #ffffff; --fg: #18181b; --muted: #52525b; --line: #e7e7ea; --head: #f4f4f5; --soft: #fafafa;
               --same: #ffffff; --jis: #e8eef7; --diff: #ffd8a8; --sjis: #ffc9c9;
               --nec: #c3fae8; --necibm: #d0bfff; --ibm: #a5d8ff; --gaiji: #ced4da; --w31j: #fff3bf;
               --one: #ffffff; --lead: #e9ecef; --none: repeating-linear-gradient(45deg, #eceef0 0 3px, #f8f9fa 3px 7px); --na: repeating-linear-gradient(45deg, #eceef0 0 3px, #f8f9fa 3px 7px);
-              --accent: #1c7ed6; --u-assigned: #4dabf7; --u-private: #ffa94d; --u-surrogate: #f06595; --u-nonchar: #343a40; --u-unassigned: #e9ecef; --k-sym: #adb5bd; --k-alnum: #ffe066; --k-hira: #faa2c1; --k-kata: #e64980; --k-greek: #ffc078; --k-cyr: #fd7e14; --k-line: #868e96; --k-kanji1: #d9a95b; --k-kanji2: #f1dcb4; --k-cell-empty: #eceef0;
+              --accent: #2563eb; --u-assigned: #4dabf7; --u-private: #ffa94d; --u-surrogate: #f06595; --u-nonchar: #343a40; --u-unassigned: #e9ecef; --k-sym: #adb5bd; --k-alnum: #ffe066; --k-hira: #faa2c1; --k-kata: #e64980; --k-greek: #ffc078; --k-cyr: #fd7e14; --k-line: #868e96; --k-kanji1: #d9a95b; --k-kanji2: #f1dcb4; --k-cell-empty: #f0f0f2;
             }
             @media (prefers-color-scheme: dark) {
               :root:not([data-theme="light"]) {
-                --bg: #16181c; --fg: #e6e8eb; --muted: #9aa1a9; --line: #343840; --head: #22252b;
-                --same: #1c1f24; --jis: #24426e; --diff: #5c3d12; --sjis: #5c1f24;
+                --bg: #0a0a0b; --fg: #ededef; --muted: #b4b4bd; --line: #232327; --head: #18181b; --soft: #111113;
+                --same: #121215; --jis: #24426e; --diff: #5c3d12; --sjis: #5c1f24;
                 --nec: #0b7a5e; --necibm: #5f3dc4; --ibm: #1864ab; --gaiji: #495057; --w31j: #4d4314;
                 --one: #2c3038; --lead: #343a40; --none: repeating-linear-gradient(45deg, #1a1c20 0 3px, #24272d 3px 7px); --na: repeating-linear-gradient(45deg, #1a1c20 0 3px, #24272d 3px 7px);
-                --accent: #4dabf7; --u-assigned: #1c7ed6; --u-private: #e8590c; --u-surrogate: #c2255c; --u-nonchar: #f1f3f5; --u-unassigned: #2b2f36; --k-sym: #6c757d; --k-alnum: #b59f1b; --k-hira: #a8436b; --k-kata: #d6336c; --k-greek: #b8742a; --k-cyr: #d9480f; --k-line: #495057; --k-kanji1: #a7834a; --k-kanji2: #6b5a3d; --k-cell-empty: #202328;
+                --accent: #8ab4ff; --u-assigned: #1c7ed6; --u-private: #e8590c; --u-surrogate: #c2255c; --u-nonchar: #f1f3f5; --u-unassigned: #2b2f36; --k-sym: #6c757d; --k-alnum: #b59f1b; --k-hira: #a8436b; --k-kata: #d6336c; --k-greek: #b8742a; --k-cyr: #d9480f; --k-line: #495057; --k-kanji1: #a7834a; --k-kanji2: #6b5a3d; --k-cell-empty: #1b1b1f;
               }
             }
             :root[data-theme="dark"] {
-              --bg: #16181c; --fg: #e6e8eb; --muted: #9aa1a9; --line: #343840; --head: #22252b;
-              --same: #1c1f24; --jis: #24426e; --diff: #5c3d12; --sjis: #5c1f24;
+              --bg: #0a0a0b; --fg: #ededef; --muted: #b4b4bd; --line: #232327; --head: #18181b; --soft: #111113;
+              --same: #121215; --jis: #24426e; --diff: #5c3d12; --sjis: #5c1f24;
               --nec: #0b7a5e; --necibm: #5f3dc4; --ibm: #1864ab; --gaiji: #495057; --w31j: #4d4314;
               --one: #2c3038; --lead: #343a40; --none: repeating-linear-gradient(45deg, #1a1c20 0 3px, #24272d 3px 7px); --na: repeating-linear-gradient(45deg, #1a1c20 0 3px, #24272d 3px 7px);
-              --accent: #4dabf7; --u-assigned: #1c7ed6; --u-private: #e8590c; --u-surrogate: #c2255c; --u-nonchar: #f1f3f5; --u-unassigned: #2b2f36; --k-sym: #6c757d; --k-alnum: #b59f1b; --k-hira: #a8436b; --k-kata: #d6336c; --k-greek: #b8742a; --k-cyr: #d9480f; --k-line: #495057; --k-kanji1: #a7834a; --k-kanji2: #6b5a3d; --k-cell-empty: #202328;
+              --accent: #8ab4ff; --u-assigned: #1c7ed6; --u-private: #e8590c; --u-surrogate: #c2255c; --u-nonchar: #f1f3f5; --u-unassigned: #2b2f36; --k-sym: #6c757d; --k-alnum: #b59f1b; --k-hira: #a8436b; --k-kata: #d6336c; --k-greek: #b8742a; --k-cyr: #d9480f; --k-line: #495057; --k-kanji1: #a7834a; --k-kanji2: #6b5a3d; --k-cell-empty: #1b1b1f;
             }
             * { box-sizing: border-box; }
-            body { margin: 0; background: var(--bg); color: var(--fg);
-              font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif; line-height: 1.7; }
-            main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 80px; }
-            h1 { font-size: 1.6rem; margin: 0 0 8px; }
-            h2 { font-size: 1.25rem; margin: 48px 0 8px; padding-bottom: 4px; border-bottom: 2px solid var(--line); }
-            h3 { font-size: 1.05rem; margin: 32px 0 8px; scroll-margin-top: 16px; }
+            html { -webkit-text-size-adjust: 100%; font-size: 106.25%; }
+            body { margin: 0; background: var(--bg); color: var(--fg); font-size: 1rem; line-height: 1.85;
+              font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+              font-feature-settings: "palt" 1; -webkit-font-smoothing: antialiased; }
+            main { max-width: 980px; margin: 0 auto; padding: 72px 24px 160px; }
+            h1 { font-size: 2.4rem; line-height: 1.25; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 12px; }
+            h2 { font-size: 1.55rem; line-height: 1.4; font-weight: 700; letter-spacing: -0.01em; margin: 88px 0 16px; }
+            h3 { font-size: 1.02rem; font-weight: 650; margin: 48px 0 10px; scroll-margin-top: 16px; }
             h3 small { font-weight: normal; color: var(--muted); margin-left: 8px; }
-            a { color: var(--accent); }
-            code, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; }
-            .lead-text { color: var(--muted); }
-            .subtitle { margin: -4px 0 12px; color: var(--muted); font-size: 0.95rem; }
-            .lead-list { color: var(--muted); margin: 4px 0 8px; padding-left: 1.4em; }
-            .lead-list li { margin: 2px 0; } .lead-list b { color: var(--fg); font-weight: 600; }
-            .note { color: var(--muted); font-size: 0.9rem; }
-            .scroll { overflow-x: auto; }
+            p, ul, ol { margin: 0 0 14px; }
+            ul, ol { padding-left: 1.3em; } li { margin: 4px 0; } li::marker { color: var(--muted); }
+            b, strong { font-weight: 650; }
+            a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; text-underline-offset: 3px; }
+            code, .mono { font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace; font-size: 0.86em;
+              font-feature-settings: normal; }
+            p code, li code { padding: 1px 6px; border-radius: 5px; background: var(--head); }
+            .subtitle { margin: 0 0 40px; color: var(--muted); font-family: ui-monospace, "SF Mono", Menlo, monospace;
+              font-size: 0.88rem; letter-spacing: 0.04em; }
+            .lead-text { color: var(--muted); max-width: 46em; }
+            .lead-list { color: var(--muted); margin: 0 0 20px; padding-left: 1.3em; max-width: 46em; }
+            .lead-list li { margin: 6px 0; } .lead-list b { color: var(--fg); }
+            .note { color: var(--muted); font-size: 0.92rem; }
+            ul.note { padding-left: 1.1em; } ul.note li { margin: 6px 0; }
+            .part { display: flex; align-items: baseline; gap: 16px; margin: 140px 0 -48px; padding-top: 20px;
+              border-top: 1px solid var(--fg); font-size: 0.86rem; font-weight: 600; letter-spacing: 0.08em; scroll-margin-top: 72px; }
+            .part > span { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: var(--muted); font-weight: 500; }
+            .scroll { overflow-x: auto; margin: 16px 0; }
             table { border-collapse: collapse; }
             th, td { border: 1px solid var(--line); }
-            th { background: var(--head); font-weight: 600; font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; padding: 2px 6px; }
-            .legend td, .legend th, .list td, .list th { padding: 4px 10px; text-align: left; font-family: inherit; font-size: 0.92rem; }
-            .legend .num { text-align: right; font-variant-numeric: tabular-nums; }
-            .list td.c { text-align: center; } .list td.x { text-align: center; color: var(--muted); }
-            .list td.bytes { white-space: nowrap; }
-            .swatch { display: inline-block; width: 1.4em; height: 1.1em; vertical-align: middle; border: 1px solid var(--line); border-radius: 3px; }
+            th { background: transparent; color: var(--muted); font-weight: 500; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+              font-size: 0.78rem; padding: 2px 6px; }
+            /* 説明用の表：縦の罫線を引かず、行の下線だけにする */
+            .legend, .list { width: 100%; }
+            .legend td, .legend th, .list td, .list th { border: 0; border-bottom: 1px solid var(--line); padding: 9px 14px 9px 0;
+              text-align: left; vertical-align: top; font-size: 0.94rem; }
+            .legend th, .list th { font-family: inherit; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.02em;
+              border-bottom-color: var(--fg); padding-top: 0; vertical-align: bottom; line-height: 1.4; }
+            .legend tbody tr:last-child td, .list tbody tr:last-child td { border-bottom: 0; }
+            .legend .num, .list .num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; }
+            .list td:first-child { white-space: nowrap; } .list th.c { white-space: nowrap; } .list th.c, .list td.c { text-align: center; padding-right: 8px; padding-left: 8px; } .list td.x { text-align: center; color: var(--muted); }
+            .list td.bytes, .list td.mono { white-space: nowrap; }
+            .swatch { display: inline-block; width: 14px; height: 14px; vertical-align: -2px; border-radius: 4px;
+              box-shadow: inset 0 0 0 1px var(--line); }
+            /* 文字の表 */
+            .grid { border-radius: 8px; }
             .grid td { width: 3.6em; min-width: 3.6em; height: 3.4em; text-align: center; vertical-align: middle; padding: 2px; }
-            .grid.overview td { height: 2.2em; font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; }
+            .grid th { padding: 4px 6px; }
+            .grid.overview td { height: 2.4em; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.78rem; }
             .grid.overview a { display: block; text-decoration: none; color: inherit; font-weight: 600; }
             .grid .g { display: block; font-size: 1.25rem; line-height: 1.2; }
             .grid .g i { font-style: normal; font-size: 0.7rem; color: var(--muted); }
-            .grid .u { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 0.6rem; color: var(--muted); line-height: 1.2; }
+            .grid .u { display: block; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.62rem; color: var(--muted); line-height: 1.2; }
             .grid .diff .g { font-size: 1rem; }
             .same { background: var(--same); } .jis { background: var(--jis); } .diff { background: var(--diff); }
             .sjis { background: var(--sjis); } .nec { background: var(--nec); } .necibm { background: var(--necibm); }
             .ibm { background: var(--ibm); } .gaiji { background: var(--gaiji); } .w31j { background: var(--w31j); }
             .lead { background: var(--lead); } .one { background: var(--one); } .none { background: var(--none); } .na { background: var(--na); }
-            .bands { padding-left: 0; list-style: none; } .bands li { margin: 4px 0; }
-            .jump { display: flex; flex-wrap: wrap; gap: 4px; margin: 12px 0; }
-            .jump a { font-family: ui-monospace, Menlo, monospace; font-size: 0.8rem; padding: 2px 6px; border: 1px solid var(--line);
-              border-radius: 4px; text-decoration: none; color: var(--fg); }
-            .callout { padding: 8px 16px; border: 1px solid var(--line); border-radius: 6px; }
-            .list .glyph, .glyph { font-size: 1.2rem; }
-            .toggle { display: inline-flex; gap: 8px; align-items: center; margin-top: 8px; cursor: pointer; }
-            body.only-diff .chars td.same { opacity: 0.25; }
+            .bands { padding-left: 0; list-style: none; font-size: 0.94rem; } .bands li { margin: 6px 0; display: flex; gap: 10px; align-items: baseline; }
+            .jump { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0; }
+            .jump a { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.82rem; padding: 3px 9px; border: 1px solid var(--line);
+              border-radius: 999px; text-decoration: none; color: var(--fg); }
+            .jump a:hover { border-color: var(--fg); }
+            .callout { padding: 14px 18px; background: var(--soft); border-radius: 8px; }
+            .list .glyph, .glyph { font-size: 1.25rem; }
+            .toggle { display: inline-flex; gap: 8px; align-items: center; margin-top: 12px; cursor: pointer; font-size: 0.92rem; color: var(--muted); }
+            .toggle input { accent-color: var(--fg); }
+            body.only-diff .chars td.same { opacity: 0.2; }
             /* 狭い画面：上部に固定する横並びの目次 */
-            .toc { position: sticky; top: 0; z-index: 10; background: var(--bg); display: flex; flex-wrap: wrap;
-              gap: 4px 14px; align-items: center; margin: 16px 0; padding: 8px 16px; border: 1px solid var(--line);
-              border-radius: 0 0 6px 6px; font-size: 0.85rem; }
-            .toc .tgroup { display: none; }
-            .toc a.active { font-weight: 600; }
+            .toc { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 18px; align-items: center;
+              margin: 0 -24px 24px; padding: 12px 24px; border-bottom: 1px solid var(--line); font-size: 0.88rem; white-space: nowrap;
+              background: color-mix(in srgb, var(--bg) 85%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+              scrollbar-width: none; }
+            .toc > b, .toc .tgroup, .toc a.sub { display: none; }
+            .toc a { color: var(--muted); } .toc a:hover { color: var(--fg); text-decoration: none; }
+            .toc a.active { color: var(--fg); font-weight: 600; }
             h2, h3, details { scroll-margin-top: 72px; }
             /* 広い画面：左のサイドパネルに縦に並べる */
             @media (min-width: 1100px) {
-              body { padding-left: 240px; }
-              .toc { position: fixed; top: 0; left: 0; bottom: 0; width: 240px; margin: 0; padding: 20px 12px 40px;
-                border: 0; border-right: 1px solid var(--line); border-radius: 0; flex-direction: column; flex-wrap: nowrap;
-                align-items: stretch; gap: 1px; overflow-y: auto; background: var(--head); font-size: 0.88rem; }
-              .toc > b { font-size: 0.95rem; padding: 0 8px 8px; }
-              .toc .tgroup { display: block; margin: 14px 8px 4px; font-size: 0.72rem; color: var(--muted);
-                letter-spacing: 0.04em; }
-              .toc a { display: block; padding: 4px 8px; border-radius: 5px; text-decoration: none; color: var(--fg);
-                border-left: 3px solid transparent; }
-              .toc a.sub { padding-left: 22px; font-size: 0.82rem; color: var(--muted); }
-              .toc a:hover { background: var(--bg); }
-              .toc a.active { background: var(--bg); color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
-              h2, h3, details { scroll-margin-top: 16px; }
+              body { padding-left: 260px; }
+              /* 右上の凡例と本文が重ならないよう、右側を空ける */
+              main { max-width: 1300px; padding-right: 300px; }
+              .toc { position: fixed; top: 0; left: 0; bottom: 0; width: 260px; margin: 0; padding: 40px 20px 40px 28px;
+                border: 0; border-right: 1px solid var(--line); flex-direction: column; flex-wrap: nowrap; align-items: stretch;
+                gap: 0; overflow-y: auto; background: var(--bg); -webkit-backdrop-filter: none; backdrop-filter: none;
+                font-size: 0.9rem; white-space: normal; }
+              .toc > b { display: block; font-size: 0.76rem; font-weight: 600; letter-spacing: 0.12em; color: var(--fg); padding-bottom: 8px; }
+              .toc .tgroup { display: block; margin: 26px 0 6px; font-size: 0.78rem; color: var(--muted); letter-spacing: 0.04em; }
+              .toc a { display: block; padding: 5px 0 5px 12px; margin-left: -12px; border-left: 2px solid transparent;
+                color: var(--muted); line-height: 1.5; transition: color 0.15s; }
+              .toc a.sub { display: block; padding-left: 26px; font-size: 0.85rem; }
+              .toc a.active { color: var(--fg); border-left-color: var(--fg); font-weight: 600; }
+              h2, h3, details { scroll-margin-top: 24px; }
+              .part { scroll-margin-top: 24px; }
             }
             /* 凡例：右上に浮かべて表示する。見出しを押すと折りたためる */
-            .side-legend { position: fixed; top: 12px; right: 16px; z-index: 30; width: 236px; max-height: calc(100vh - 24px);
-              overflow-y: auto; padding: 8px 14px 10px; background: var(--head); border: 1px solid var(--line); border-radius: 8px;
-              box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); }
+            .side-legend { position: fixed; top: 16px; right: 16px; z-index: 30; width: 244px; max-height: calc(100vh - 32px);
+              overflow-y: auto; padding: 10px 14px 12px; border: 1px solid var(--line); border-radius: 12px;
+              background: color-mix(in srgb, var(--bg) 88%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+              box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08); }
             .side-legend .sl-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%;
-              padding: 2px 0; background: none; border: 0; color: var(--fg); font: inherit; font-size: 0.85rem; font-weight: 600;
-              cursor: pointer; }
-            .sl-caret::after { content: "▾"; color: var(--muted); }
-            .side-legend .sl-body { margin-top: 6px; }
-            .side-legend.collapsed { width: auto; padding-bottom: 8px; }
+              padding: 0; background: none; border: 0; color: var(--fg); font: inherit; font-size: 0.76rem; font-weight: 600;
+              letter-spacing: 0.12em; cursor: pointer; }
+            .sl-caret::after { content: "−"; color: var(--muted); font-size: 0.9rem; }
+            .side-legend .sl-body { margin-top: 8px; }
+            .side-legend.collapsed { width: auto; padding-bottom: 10px; }
             .side-legend.collapsed .sl-body { display: none; }
-            .side-legend.collapsed .sl-caret::after { content: "▸"; }
+            .side-legend.collapsed .sl-caret::after { content: "+"; }
             .sl-block { display: none; } .sl-block.shown { display: block; }
-            .sl-item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; line-height: 1.5; padding: 1px 0; }
-            .sl-item .swatch { flex: none; width: 1.2em; height: 0.95em; }
-            .sl-item small { margin-left: auto; color: var(--muted); font-size: 0.7rem; }
-            .sl-sep { font-size: 0.7rem; color: var(--muted); margin: 8px 0 2px; }
-            .sl-note { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+            .sl-item { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; line-height: 1.5; padding: 2px 0; }
+            .sl-item .swatch { flex: none; width: 11px; height: 11px; border-radius: 3px; }
+            .sl-item small { margin-left: auto; color: var(--muted); font-size: 0.74rem; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+            .sl-sep { font-size: 0.74rem; color: var(--muted); margin: 10px 0 2px; }
+            .sl-note { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
             .k-diff-swatch { box-shadow: inset 0 0 0 2px #e03131; }
 
-            .block { border: 1px solid var(--line); border-radius: 6px; margin: 6px 0; }
-            .block > summary { cursor: pointer; padding: 6px 12px; display: flex; align-items: center; gap: 10px; list-style: none; }
+            /* 折りたたみ */
+            .block { border: 0; border-bottom: 1px solid var(--line); margin: 0; }
+            .block:first-of-type { border-top: 1px solid var(--line); }
+            .block > summary { cursor: pointer; padding: 12px 4px; display: flex; align-items: center; gap: 12px; list-style: none; }
             .block > summary::-webkit-details-marker { display: none; }
-            .block > summary::before { content: "▶"; font-size: 0.65em; color: var(--muted); transition: transform 0.15s; }
-            .block[open] > summary::before { transform: rotate(90deg); }
-            .block[open] > summary { border-bottom: 1px solid var(--line); }
-            .block > summary:hover { background: var(--head); }
-            .block > .scroll, .block > .callout { margin: 8px; }
-            .badge { font-family: ui-monospace, Menlo, monospace; font-weight: 600; font-size: 0.85rem; padding: 1px 8px;
-              border-radius: 4px; border: 1px solid var(--line); }
-            .meta { margin-left: auto; color: var(--muted); font-size: 0.85rem; display: flex; gap: 8px; align-items: center; }
-            .preview { color: var(--muted); font-size: 0.95rem; letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+            .block > summary::before { content: ""; width: 6px; height: 6px; flex: none; border-right: 1.5px solid var(--muted);
+              border-bottom: 1.5px solid var(--muted); transform: rotate(-45deg); transition: transform 0.15s; }
+            .block[open] > summary::before { transform: rotate(45deg); }
+            .block > summary:hover { background: var(--soft); }
+            .block > .scroll, .block > .callout { margin: 4px 0 20px; }
+            .badge { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-weight: 600; font-size: 0.84rem; padding: 1px 8px;
+              border-radius: 5px; box-shadow: inset 0 0 0 1px var(--line); }
+            .meta { margin-left: auto; color: var(--muted); font-size: 0.86rem; display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+            .preview { color: var(--muted); font-size: 0.92rem; letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
             .k-sym { background: var(--k-sym); } .k-alnum { background: var(--k-alnum); } .k-hira { background: var(--k-hira); }
             .k-kata { background: var(--k-kata); } .k-greek { background: var(--k-greek); } .k-cyr { background: var(--k-cyr); }
             .k-line { background: var(--k-line); } .k-kanji1 { background: var(--k-kanji1); } .k-kanji2 { background: var(--k-kanji2); }
             .k-empty { background: var(--k-cell-empty); }
             .kregions td { vertical-align: middle; } .kregions tr.muted td { color: var(--muted); }
-            .kregions .note { font-size: 0.8rem; }
+            .kregions .note { font-size: 0.84rem; }
             .kmap { --frame: var(--fg); border-collapse: collapse; margin-top: 12px; }
             .kmap th, .kmap td { padding: 0; border: 0; }
             .kmap td { width: 8px; height: 8px; min-width: 8px; border: 1px solid var(--bg); }
@@ -1441,36 +1780,42 @@ public class MappingTable {
             .kmap tr.kgap td { height: 5px; border: 0; background: none; }
             .kmap td.gaiji { background: repeating-linear-gradient(45deg, var(--gaiji) 0 2px, transparent 2px 4px); }
             .kmap td.k-diff { box-shadow: inset 0 0 0 2px #e03131; }
-            .kmap th { background: none; font-size: 0.6rem; line-height: 8px; height: 8px; color: var(--muted); font-weight: normal;
+            .kmap th { background: none; font-size: 0.58rem; line-height: 8px; height: 8px; color: var(--muted); font-weight: normal;
               text-align: right; padding-right: 4px; white-space: nowrap; }
             .kmap tr:first-child th { text-align: left; height: 14px; }
             .kmap th a { color: var(--muted); text-decoration: none; }
-            .kmap th a:hover { color: var(--accent); }
-            .kmap td.klabel { width: auto; background: none; border: 0; font-size: 0.75rem; color: var(--fg); padding-left: 10px;
+            .kmap th a:hover { color: var(--fg); }
+            .kmap td.klabel { width: auto; background: none; border: 0; font-size: 0.78rem; color: var(--fg); padding-left: 10px;
               white-space: nowrap; vertical-align: middle; }
             .kmap td.klabel span { color: var(--muted); margin-left: 4px; }
             .kmap td.klabel.kx { color: var(--muted); } .kmap td.klabel.kx b { font-weight: normal; }
-            .kmap tr:not(.kgap) td:hover:not(.klabel) { outline: 2px solid var(--accent); }
+            .kmap tr:not(.kgap) td:hover:not(.klabel) { outline: 2px solid var(--fg); }
             .u-assigned { background: var(--u-assigned); } .u-private { background: var(--u-private); }
             .u-surrogate { background: var(--u-surrogate); } .u-nonchar { background: var(--u-nonchar); }
             .u-unassigned { background: var(--u-unassigned); }
             .planes td { vertical-align: middle; } .planes .barcol { min-width: 220px; }
-            .planecards { display: flex; flex-wrap: wrap; gap: 14px; margin: 12px 0; }
-            .planecard { border: 2px solid var(--fg); border-radius: 8px; padding: 8px 10px 10px; width: 200px; }
-            .planecard.unused { border-style: dashed; border-color: var(--muted); color: var(--muted); }
-            .ptitle { font-size: 0.9rem; line-height: 1.4; }
-            .ptitle b, .ptitle span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .prange { font-size: 0.7rem; color: var(--muted); margin-bottom: 6px; }
+            .planecards { display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0; }
+            .planecard { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px 14px; width: 204px; background: var(--soft); }
+            .planecard.unused { border-style: dashed; background: transparent; color: var(--muted); }
+            .ptitle { font-size: 0.9rem; line-height: 1.45; }
+            .ptitle b, .ptitle span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .prange { font-size: 0.74rem; color: var(--muted); margin-bottom: 8px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
             .pgrid { display: grid; grid-template-columns: repeat(16, 10px); gap: 1px; }
-            .pgrid div { width: 10px; height: 10px; }
-            .pgrid div:hover { outline: 2px solid var(--accent); }
-            .pnote { font-size: 0.72rem; color: var(--muted); margin-top: 6px; line-height: 1.5; }
-            .ubar { height: 18px; border-radius: 3px; border: 1px solid var(--line); }
-            .grid.umap td { height: 2.6em; font-family: ui-monospace, Menlo, monospace; font-size: 0.75rem; }
+            .pgrid div { width: 10px; height: 10px; border-radius: 1px; }
+            .pgrid div:hover { outline: 2px solid var(--fg); }
+            .pnote { font-size: 0.76rem; color: var(--muted); margin-top: 8px; line-height: 1.55; }
+            .ubar { height: 14px; border-radius: 4px; overflow: hidden; }
+            .grid.umap td { height: 2.6em; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.72rem; }
             .grid.umap td span { background: var(--bg); color: var(--fg); padding: 0 3px; border-radius: 3px; opacity: 0.85; }
-            .pill { padding: 0 8px; border-radius: 10px; color: var(--fg); font-size: 0.8rem; }
-            .controls { display: flex; gap: 8px; margin: 8px 0 4px; }
-            .controls button { font: inherit; font-size: 0.85rem; padding: 4px 12px; border: 1px solid var(--line);
-              background: var(--head); color: var(--fg); border-radius: 4px; cursor: pointer; }
+            .pill { padding: 0 8px; border-radius: 999px; color: var(--fg); font-size: 0.78rem; }
+            .controls { display: flex; gap: 8px; margin: 16px 0 8px; }
+            .controls button { font: inherit; font-size: 0.86rem; padding: 4px 14px; border: 1px solid var(--line);
+              background: transparent; color: var(--fg); border-radius: 999px; cursor: pointer; }
+            .controls button:hover { border-color: var(--fg); }
+            .refs { font-size: 0.92rem; }
+            pre { margin: 12px 0 20px; padding: 14px 18px; background: var(--head); border-radius: 8px; overflow-x: auto; line-height: 1.6; }
+            pre code { padding: 0; background: none; font-size: 0.86rem; }
+            ::selection { background: var(--fg); color: var(--bg); }
             """;
 
     private static final String JS = """
