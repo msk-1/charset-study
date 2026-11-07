@@ -167,7 +167,8 @@ public class MappingTable {
         h.append("""
                 <p class="lead-text">日本語の文字コードを、文字集合と符号化方式の両面から学ぶための資料。5 部に分けてまとめている。</p>
                 <ol class="lead-list">
-                <li><b>基礎</b>：文字集合・符号化方式・文字コードという言葉の違いと、どの符号化方式がどの文字集合を使うかの対応表</li>
+                <li><b>基礎</b>：文字集合・符号化方式・文字コードという言葉の違いと、どの符号化方式がどの文字集合を使うかの対応表。
+                Java の文字列が Unicode で、<code>Charset</code> が符号化方式にあたること</li>
                 <li><b>JIS と Shift_JIS 系</b>：文字集合 JIS X 0208 の区点と、それを Shift_JIS・windows-31j でバイト列にした表。
                 windows-31j が拡張した範囲と、2 つの方式の違いも示す</li>
                 <li><b>Unicode と UTF-8</b>：文字集合 Unicode の面と BMP の使い道と、それを UTF-8 でバイト列にする規則</li>
@@ -184,6 +185,7 @@ public class MappingTable {
                 <span class="tgroup">01　基礎</span>
                 <a href="#basics" data-legend="none">文字集合・符号化方式・文字コード</a>
                 <a href="#schemes" data-legend="none">文字集合と符号化方式の対応表</a>
+                <a href="#java" data-legend="none">Java の文字と Unicode</a>
                 <span class="tgroup">02　JIS と Shift_JIS 系</span>
                 <a href="#kuten" data-legend="kuten">JIS X 0208 の区点</a>
                 <a href="#overview" data-legend="sjis">Shift_JIS 系の 1 バイト目</a>
@@ -208,6 +210,7 @@ public class MappingTable {
         part(h, "part-basics", "PART 01", "基礎");
         renderBasics(h);
         renderSchemes(h);
+        renderJava(h);
         part(h, "part-jis", "PART 02", "JIS と Shift_JIS 系");
         renderKutenMap(h, doubleByte);
         renderOverview(h, singleByte, doubleByte);
@@ -612,6 +615,199 @@ public class MappingTable {
                 .append("<li><b>文字集合に入っていない（表せない）</b>：符号化方式が正しくても、文字集合にない文字は書けない。"
                         + "「🍣」を windows-31j に変換すると <span class=\"mono\">").append(hexBytes(toInts("🍣".getBytes(W31J))))
                 .append("</span>（<code>?</code>）になる。対策は、その文字を含む文字集合（Unicode）の符号化方式に変えること</li>\n")
+                .append("</ul>\n</section>\n");
+    }
+
+    // ---- Java の文字と Unicode ----
+
+    /** 文字数の数え方を比べる文字列と、その説明。 */
+    private static final List<String[]> JAVA_SAMPLES = List.of(
+            new String[] {"A", "ASCII"},
+            new String[] {"ｱ", "半角カナ"},
+            new String[] {"漢", "BMP の漢字"},
+            new String[] {"𠮷", "BMP の外の漢字"},
+            new String[] {"🍣", "BMP の外の絵文字"},
+            new String[] {"が", "「か」＋結合用の濁点（NFD の「が」）"},
+            new String[] {"葛󠄀", "「葛」＋異体字セレクタ U+E0100"},
+            new String[] {"👨‍👩‍👧", "3 つの絵文字を ZWJ（U+200D）でつないだもの"});
+
+    /** Charset.forName に渡す名前の例と、その名前について知っておくこと。 */
+    private static final List<String[]> JAVA_NAMES = List.of(
+            new String[] {"Shift_JIS", "JIS X 0208 だけの Shift_JIS"},
+            new String[] {"SJIS", "Shift_JIS の別名。windows-31j ではない"},
+            new String[] {"windows-31j", "Windows の拡張を含む Shift_JIS"},
+            new String[] {"MS932", "windows-31j の別名"},
+            new String[] {"CP943C", "IBM の Shift_JIS。windows-31j とは変換表が違う"},
+            new String[] {"EUC-JP", ""},
+            new String[] {"UTF8", "UTF-8 の別名"},
+            new String[] {"UTF-16", "読むときは BOM で順序を決め、書くときは BOM（FE FF）を付ける"});
+
+    private static String utf16Units(String s) {
+        StringBuilder sb = new StringBuilder();
+        for (char c : s.toCharArray()) {
+            sb.append(sb.isEmpty() ? "" : " ").append(String.format("%04X", (int) c));
+        }
+        return sb.toString();
+    }
+
+    private static String sysProp(String key) {
+        String v = System.getProperty(key);
+        return v == null ? "（未設定）" : v;
+    }
+
+    /** Java の String・char・Charset と、文字集合・符号化方式の関係。例の値はすべて JDK で求める。 */
+    private static void renderJava(StringBuilder h) {
+        Charset utf8 = java.nio.charset.StandardCharsets.UTF_8;
+        int[] wave = {0x81, 0x60};
+
+        h.append("""
+                <section id="java">
+                <h2>Java の文字と Unicode</h2>
+                <p>Java では、文字列（<code>String</code>・<code>char</code>）の文字集合は Unicode に決まっている。
+                Shift_JIS のファイルを読んでも、メモリの上では Unicode の文字列になる。
+                符号化方式（<code>Charset</code>）が関わるのは、ファイル・通信・データベースなど外とバイト列をやり取りする境目だけである。</p>
+                <h3>中は Unicode、外はバイト列</h3>
+                <div class="scroll"><table class="list">
+                <thead><tr><th>段</th><th>中身</th><th>主な API</th></tr></thead>
+                <tbody>
+                <tr><td>外から読む（デコード）</td><td>バイト列 → Unicode の文字列</td>
+                <td><code>new String(bytes, cs)</code>・<code>InputStreamReader</code>・<code>Files.readString(path, cs)</code></td></tr>
+                <tr><td>中で処理する</td><td>Unicode の文字列（<code>String</code>・<code>char</code>・コードポイントの <code>int</code>）</td>
+                <td><code>String</code>・<code>StringBuilder</code>・<code>Character</code></td></tr>
+                <tr><td>外へ書く（エンコード）</td><td>Unicode の文字列 → バイト列</td>
+                <td><code>s.getBytes(cs)</code>・<code>OutputStreamWriter</code>・<code>Files.writeString(path, s, cs)</code></td></tr>
+                </tbody>
+                </table></div>
+                <p>つまり Java の <code>Charset</code> は、どれも「Unicode ⇔ ある符号化方式のバイト列」の変換表である。
+                Shift_JIS から EUC-JP への変換も、直接ではなく Unicode を経由して行う（デコードしてからエンコードする）。
+                そのため、各 <code>Charset</code> がどの Unicode の文字に対応付けているかで結果が決まる。</p>
+                """);
+        h.append("<p>たとえば同じバイト列 <span class=\"mono\">").append(hexBytes(wave))
+                .append("</span> を、Shift_JIS は <span class=\"glyph\">").append(esc(decodeLenient(wave, SJIS)))
+                .append("</span>（U+").append(cp(decodeLenient(wave, SJIS))).append("）、windows-31j は <span class=\"glyph\">")
+                .append(esc(decodeLenient(wave, W31J))).append("</span>（U+").append(cp(decodeLenient(wave, W31J)))
+                .append("）にデコードする。見た目は似ていても Unicode では別の文字なので、"
+                        + "比較や再エンコードの結果が変わる（<a href=\"#sjis-w31j\">Shift_JIS と windows-31j の違い</a>）。</p>\n");
+
+        // char は UTF-16 のコード単位
+        h.append("""
+                <h3>char は 1 文字ではなく UTF-16 の 1 単位</h3>
+                <p><code>char</code> は 16 ビットで、Unicode の文字そのものではなく <b>UTF-16 のコード単位</b>を 1 つ持つ。
+                <code>String</code> は <code>char</code> の並びとして振る舞う。BMP（U+0000〜U+FFFF）の文字は <code>char</code> 1 つで表せるが、
+                BMP の外（U+10000 以上）の文字は<b>サロゲートペア</b>と呼ぶ 2 つの <code>char</code> になる。
+                <code>length()</code> が返すのは文字数ではなく <code>char</code> の数である。</p>
+                """);
+        h.append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>文字列</th><th>中身</th><th>コードポイント</th>"
+                + "<th>char の値（UTF-16）</th><th class=\"c\">length()</th><th class=\"c\">codePointCount</th>"
+                + "<th class=\"c\">見た目の文字数（\\X）</th><th class=\"c\">UTF-8</th><th class=\"c\">windows-31j</th></tr></thead>\n<tbody>\n");
+        java.util.regex.Pattern grapheme = java.util.regex.Pattern.compile("\\X");
+        for (String[] sample : JAVA_SAMPLES) {
+            String s = sample[0];
+            int[] w = encodeStrict(W31J, s);
+            h.append("<tr><td class=\"glyph\">").append(esc(s)).append("</td><td>").append(esc(sample[1]))
+                    .append("</td><td class=\"mono\">").append(cps(s)).append("</td><td class=\"mono\">").append(utf16Units(s))
+                    .append("</td><td class=\"num\">").append(s.length()).append("</td><td class=\"num\">")
+                    .append(s.codePointCount(0, s.length())).append("</td><td class=\"num\">")
+                    .append(grapheme.matcher(s).results().count()).append("</td><td class=\"num\">")
+                    .append(s.getBytes(utf8).length).append("</td><td class=\"num\">")
+                    .append(w == null ? "表せない" : String.valueOf(w.length)).append("</td></tr>\n");
+        }
+        h.append("</tbody>\n</table></div>\n")
+                .append("<ul class=\"note\">\n<li>UTF-8・windows-31j の列はバイト数。windows-31j は厳密にエンコードし、1 文字でも表せなければ「表せない」とした</li>\n"
+                        + "<li>見た目の文字数は、正規表現 <code>\\X</code>（書記素クラスタ）が何回一致するかで数えた。"
+                        + "コードポイントで数えても、結合文字・異体字セレクタ・ZWJ でつないだ絵文字は 1 文字にならない</li>\n"
+                        + "<li>JDK 9 からは、中身が Latin-1 だけの文字列を 1 文字 1 バイトで持つ（Compact Strings）。"
+                        + "メモリ上の持ち方が変わるだけで、API から見える動作は UTF-16 のまま</li>\n</ul>\n");
+
+        // コードポイント単位の API
+        String sushi = "🍣";
+        String half = sushi.substring(0, 1);
+        h.append("""
+                <h3>文字単位で扱う API</h3>
+                <p><code>char</code> 単位の API は、BMP の外の文字をサロゲートの片方ずつに分けてしまう。
+                文字（コードポイント）単位で扱うときは、<code>int</code> でコードポイントを受け渡す API を使う。</p>
+                <div class="scroll"><table class="list">
+                <thead><tr><th>やりたいこと</th><th>char 単位（BMP の外で壊れる）</th><th>コードポイント単位</th></tr></thead>
+                <tbody>
+                <tr><td>文字数を数える</td><td><code>s.length()</code></td><td><code>s.codePointCount(0, s.length())</code></td></tr>
+                <tr><td>1 文字ずつ見る</td><td><code>s.charAt(i)</code>・<code>s.chars()</code></td>
+                <td><code>s.codePointAt(i)</code> と <code>Character.charCount(cp)</code>・<code>s.codePoints()</code></td></tr>
+                <tr><td>n 文字目の位置を求める</td><td><code>n</code> をそのまま使う</td><td><code>s.offsetByCodePoints(0, n)</code></td></tr>
+                <tr><td>番号から文字列を作る</td><td><code>String.valueOf((char) c)</code></td>
+                <td><code>Character.toString(cp)</code>・<code>sb.appendCodePoint(cp)</code></td></tr>
+                <tr><td>文字の種類を調べる</td><td><code>Character.isLetter(char)</code></td><td><code>Character.isLetter(int)</code>・<code>Character.UnicodeBlock.of(int)</code></td></tr>
+                </tbody>
+                </table></div>
+                """);
+        h.append("<p>たとえば <code>\"").append(sushi).append("\".substring(0, 1)</code> はサロゲートの片方（<span class=\"mono\">")
+                .append(utf16Units(half)).append("</span>）だけの不正な文字列になり、UTF-8 へ <code>getBytes</code> すると <span class=\"mono\">")
+                .append(hexBytes(toInts(half.getBytes(utf8)))).append("</span>（<code>?</code>）になる。"
+                        + "<code>char c = '").append(sushi).append("';</code> は 1 つの <code>char</code> に入らないのでコンパイルできない。"
+                        + "見た目の 1 文字で区切りたいときは <code>BreakIterator.getCharacterInstance()</code> か正規表現の <code>\\X</code> を使う。</p>\n");
+
+        // Charset の名前
+        h.append("""
+                <h3>Java の Charset の名前</h3>
+                <p><code>Charset.forName</code> は正式名のほかに別名も受け付ける。別名が指す実体は、<code>name()</code> で確かめられる。
+                「SJIS」と書くと windows-31j ではなく Shift_JIS になる点に注意する。</p>
+                """);
+        h.append("<div class=\"scroll\"><table class=\"list\">\n<thead><tr><th>forName に渡す名前</th><th>name()（実体）</th>"
+                + "<th>備考</th></tr></thead>\n<tbody>\n");
+        for (String[] n : JAVA_NAMES) {
+            String actual = Charset.isSupported(n[0]) ? Charset.forName(n[0]).name() : "（この JDK にない）";
+            h.append("<tr><td class=\"mono\">").append(esc(n[0])).append("</td><td class=\"mono\">").append(esc(actual))
+                    .append("</td><td>").append(esc(n[1])).append("</td></tr>\n");
+        }
+        h.append("</tbody>\n</table></div>\n")
+                .append("<p class=\"note\">すべての JDK にあると保証されているのは、<code>StandardCharsets</code> にある US-ASCII・ISO-8859-1・UTF-8・"
+                        + "UTF-16・UTF-16BE・UTF-16LE だけ。Shift_JIS・windows-31j・EUC-JP は "
+                        + "<code>jdk.charsets</code> モジュールにあるので、<code>jlink</code> で最小の実行環境を作るとこのモジュールを含めない限り使えない。</p>\n");
+
+        // 既定値
+        h.append("""
+                <h3>符号化方式を省略したときに使われる値</h3>
+                <p>符号化方式を省略できる API では、次の値が使われる。どれも実行環境によって変わりうるので、外とやり取りするときは明示する。</p>
+                <div class="scroll"><table class="list">
+                <thead><tr><th>値</th><th>何に使われるか</th><th>この環境の値</th></tr></thead>
+                <tbody>
+                """);
+        String[][] props = {
+                {"Charset.defaultCharset()（file.encoding）",
+                        "<code>new String(bytes)</code>・<code>getBytes()</code>・<code>FileReader</code>・<code>FileWriter</code>・<code>Scanner</code> など。JDK 18 から UTF-8（JEP 400）",
+                        Charset.defaultCharset().name()},
+                {"native.encoding", "OS 本来の符号化方式（JDK 17 から）。日本語の Windows では MS932 になる。JDK 18 より前の既定値に当たる",
+                        sysProp("native.encoding")},
+                {"stdout.encoding", "<code>System.out</code> が端末へ書くときの符号化方式（JDK 19 から）", sysProp("stdout.encoding")},
+                {"sun.jnu.encoding", "ファイル名・コマンドライン引数・環境変数", sysProp("sun.jnu.encoding")},
+                {"javac -encoding", "ソースファイル。Maven では <code>project.build.sourceEncoding</code>。JDK 18 から既定は UTF-8", "—"}};
+        for (String[] p : props) {
+            h.append("<tr><td class=\"mono\">").append(esc(p[0])).append("</td><td>").append(p[1]).append("</td><td class=\"mono\">")
+                    .append(esc(p[2])).append("</td></tr>\n");
+        }
+        h.append("</tbody>\n</table></div>\n")
+                .append("<p class=\"note\"><code>Files.readString</code>・<code>Files.newBufferedReader</code> など <code>java.nio.file.Files</code> の"
+                        + "メソッドは、省略すると JDK の版によらず UTF-8 を使う。</p>\n");
+
+        // ソースコードと修正 UTF-8
+        byte[] modified;
+        try {
+            java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+            new java.io.DataOutputStream(bo).writeUTF(sushi);
+            modified = java.util.Arrays.copyOfRange(bo.toByteArray(), 2, bo.size());
+        } catch (IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
+        String escaped = utf16Units(sushi).replaceAll("(\\S+)", "\\\\u$1").replace(" ", "");
+        h.append("<h3>ソースコードとクラスファイルの中の文字</h3>\n<ul>\n")
+                .append("<li>ソースでは <code>\\uXXXX</code> で UTF-16 のコード単位を書ける。BMP の外の文字は 2 つ並べ、「")
+                .append(sushi).append("」は <code>\"").append(escaped).append("\"</code> になる</li>\n")
+                .append("<li><code>\\uXXXX</code> はコンパイルの最初の段で文字に置き換わる。コメントの中の <code>\\u000A</code> も改行になり、"
+                        + "その後ろがコードとして扱われるので注意する</li>\n")
+                .append("<li>クラスファイルの文字列定数・<code>DataOutputStream.writeUTF</code>・JNI は、UTF-8 に似た<b>修正 UTF-8</b>（modified UTF-8）を使う。"
+                        + "U+0000 を <span class=\"mono\">C0 80</span> にし、BMP の外の文字はサロゲートを 1 つずつ 3 バイトにする。「")
+                .append(sushi).append("」は UTF-8 では <span class=\"mono\">").append(utf8Hex(sushi))
+                .append("</span>、修正 UTF-8 では <span class=\"mono\">").append(hexBytes(toInts(modified)))
+                .append("</span>。ほかのプログラムと UTF-8 でやり取りする用途には使わない</li>\n")
                 .append("</ul>\n</section>\n");
     }
 

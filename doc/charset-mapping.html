@@ -220,7 +220,8 @@ pre code { padding: 0; background: none; font-size: 0.86rem; }
 <p class="subtitle">文字集合・符号化方式・Shift_JIS・windows-31j・Unicode・UTF-8・変換・MJ+</p>
 <p class="lead-text">日本語の文字コードを、文字集合と符号化方式の両面から学ぶための資料。5 部に分けてまとめている。</p>
 <ol class="lead-list">
-<li><b>基礎</b>：文字集合・符号化方式・文字コードという言葉の違いと、どの符号化方式がどの文字集合を使うかの対応表</li>
+<li><b>基礎</b>：文字集合・符号化方式・文字コードという言葉の違いと、どの符号化方式がどの文字集合を使うかの対応表。
+Java の文字列が Unicode で、<code>Charset</code> が符号化方式にあたること</li>
 <li><b>JIS と Shift_JIS 系</b>：文字集合 JIS X 0208 の区点と、それを Shift_JIS・windows-31j でバイト列にした表。
 windows-31j が拡張した範囲と、2 つの方式の違いも示す</li>
 <li><b>Unicode と UTF-8</b>：文字集合 Unicode の面と BMP の使い道と、それを UTF-8 でバイト列にする規則</li>
@@ -232,6 +233,7 @@ windows-31j が拡張した範囲と、2 つの方式の違いも示す</li>
 <span class="tgroup">01　基礎</span>
 <a href="#basics" data-legend="none">文字集合・符号化方式・文字コード</a>
 <a href="#schemes" data-legend="none">文字集合と符号化方式の対応表</a>
+<a href="#java" data-legend="none">Java の文字と Unicode</a>
 <span class="tgroup">02　JIS と Shift_JIS 系</span>
 <a href="#kuten" data-legend="kuten">JIS X 0208 の区点</a>
 <a href="#overview" data-legend="sjis">Shift_JIS 系の 1 バイト目</a>
@@ -420,6 +422,103 @@ ISO-2022-JP のバイト列には、文字集合を切り替えるエスケー�
 <tr><td class="glyph">🍣</td><td>Unicode のみ</td><td class="mono">U+1F363</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="x">×</td><td class="mono bytes">F0 9F 8D A3</td><td class="mono bytes">D8 3C DF 63</td><td class="mono bytes">00 01 F3 63</td></tr>
 </tbody>
 </table></div>
+</section>
+<section id="java">
+<h2>Java の文字と Unicode</h2>
+<p>Java では、文字列（<code>String</code>・<code>char</code>）の文字集合は Unicode に決まっている。
+Shift_JIS のファイルを読んでも、メモリの上では Unicode の文字列になる。
+符号化方式（<code>Charset</code>）が関わるのは、ファイル・通信・データベースなど外とバイト列をやり取りする境目だけである。</p>
+<h3>中は Unicode、外はバイト列</h3>
+<div class="scroll"><table class="list">
+<thead><tr><th>段</th><th>中身</th><th>主な API</th></tr></thead>
+<tbody>
+<tr><td>外から読む（デコード）</td><td>バイト列 → Unicode の文字列</td>
+<td><code>new String(bytes, cs)</code>・<code>InputStreamReader</code>・<code>Files.readString(path, cs)</code></td></tr>
+<tr><td>中で処理する</td><td>Unicode の文字列（<code>String</code>・<code>char</code>・コードポイントの <code>int</code>）</td>
+<td><code>String</code>・<code>StringBuilder</code>・<code>Character</code></td></tr>
+<tr><td>外へ書く（エンコード）</td><td>Unicode の文字列 → バイト列</td>
+<td><code>s.getBytes(cs)</code>・<code>OutputStreamWriter</code>・<code>Files.writeString(path, s, cs)</code></td></tr>
+</tbody>
+</table></div>
+<p>つまり Java の <code>Charset</code> は、どれも「Unicode ⇔ ある符号化方式のバイト列」の変換表である。
+Shift_JIS から EUC-JP への変換も、直接ではなく Unicode を経由して行う（デコードしてからエンコードする）。
+そのため、各 <code>Charset</code> がどの Unicode の文字に対応付けているかで結果が決まる。</p>
+<p>たとえば同じバイト列 <span class="mono">81 60</span> を、Shift_JIS は <span class="glyph">〜</span>（U+301C）、windows-31j は <span class="glyph">～</span>（U+FF5E）にデコードする。見た目は似ていても Unicode では別の文字なので、比較や再エンコードの結果が変わる（<a href="#sjis-w31j">Shift_JIS と windows-31j の違い</a>）。</p>
+<h3>char は 1 文字ではなく UTF-16 の 1 単位</h3>
+<p><code>char</code> は 16 ビットで、Unicode の文字そのものではなく <b>UTF-16 のコード単位</b>を 1 つ持つ。
+<code>String</code> は <code>char</code> の並びとして振る舞う。BMP（U+0000〜U+FFFF）の文字は <code>char</code> 1 つで表せるが、
+BMP の外（U+10000 以上）の文字は<b>サロゲートペア</b>と呼ぶ 2 つの <code>char</code> になる。
+<code>length()</code> が返すのは文字数ではなく <code>char</code> の数である。</p>
+<div class="scroll"><table class="list">
+<thead><tr><th>文字列</th><th>中身</th><th>コードポイント</th><th>char の値（UTF-16）</th><th class="c">length()</th><th class="c">codePointCount</th><th class="c">見た目の文字数（\X）</th><th class="c">UTF-8</th><th class="c">windows-31j</th></tr></thead>
+<tbody>
+<tr><td class="glyph">A</td><td>ASCII</td><td class="mono">U+0041</td><td class="mono">0041</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td class="glyph">ｱ</td><td>半角カナ</td><td class="mono">U+FF71</td><td class="mono">FF71</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">3</td><td class="num">1</td></tr>
+<tr><td class="glyph">漢</td><td>BMP の漢字</td><td class="mono">U+6F22</td><td class="mono">6F22</td><td class="num">1</td><td class="num">1</td><td class="num">1</td><td class="num">3</td><td class="num">2</td></tr>
+<tr><td class="glyph">𠮷</td><td>BMP の外の漢字</td><td class="mono">U+20BB7</td><td class="mono">D842 DFB7</td><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">4</td><td class="num">表せない</td></tr>
+<tr><td class="glyph">🍣</td><td>BMP の外の絵文字</td><td class="mono">U+1F363</td><td class="mono">D83C DF63</td><td class="num">2</td><td class="num">1</td><td class="num">1</td><td class="num">4</td><td class="num">表せない</td></tr>
+<tr><td class="glyph">が</td><td>「か」＋結合用の濁点（NFD の「が」）</td><td class="mono">U+304B U+3099</td><td class="mono">304B 3099</td><td class="num">2</td><td class="num">2</td><td class="num">1</td><td class="num">6</td><td class="num">表せない</td></tr>
+<tr><td class="glyph">葛󠄀</td><td>「葛」＋異体字セレクタ U+E0100</td><td class="mono">U+845B U+E0100</td><td class="mono">845B DB40 DD00</td><td class="num">3</td><td class="num">2</td><td class="num">1</td><td class="num">7</td><td class="num">表せない</td></tr>
+<tr><td class="glyph">👨‍👩‍👧</td><td>3 つの絵文字を ZWJ（U+200D）でつないだもの</td><td class="mono">U+1F468 U+200D U+1F469 U+200D U+1F467</td><td class="mono">D83D DC68 200D D83D DC69 200D D83D DC67</td><td class="num">8</td><td class="num">5</td><td class="num">1</td><td class="num">18</td><td class="num">表せない</td></tr>
+</tbody>
+</table></div>
+<ul class="note">
+<li>UTF-8・windows-31j の列はバイト数。windows-31j は厳密にエンコードし、1 文字でも表せなければ「表せない」とした</li>
+<li>見た目の文字数は、正規表現 <code>\X</code>（書記素クラスタ）が何回一致するかで数えた。コードポイントで数えても、結合文字・異体字セレクタ・ZWJ でつないだ絵文字は 1 文字にならない</li>
+<li>JDK 9 からは、中身が Latin-1 だけの文字列を 1 文字 1 バイトで持つ（Compact Strings）。メモリ上の持ち方が変わるだけで、API から見える動作は UTF-16 のまま</li>
+</ul>
+<h3>文字単位で扱う API</h3>
+<p><code>char</code> 単位の API は、BMP の外の文字をサロゲートの片方ずつに分けてしまう。
+文字（コードポイント）単位で扱うときは、<code>int</code> でコードポイントを受け渡す API を使う。</p>
+<div class="scroll"><table class="list">
+<thead><tr><th>やりたいこと</th><th>char 単位（BMP の外で壊れる）</th><th>コードポイント単位</th></tr></thead>
+<tbody>
+<tr><td>文字数を数える</td><td><code>s.length()</code></td><td><code>s.codePointCount(0, s.length())</code></td></tr>
+<tr><td>1 文字ずつ見る</td><td><code>s.charAt(i)</code>・<code>s.chars()</code></td>
+<td><code>s.codePointAt(i)</code> と <code>Character.charCount(cp)</code>・<code>s.codePoints()</code></td></tr>
+<tr><td>n 文字目の位置を求める</td><td><code>n</code> をそのまま使う</td><td><code>s.offsetByCodePoints(0, n)</code></td></tr>
+<tr><td>番号から文字列を作る</td><td><code>String.valueOf((char) c)</code></td>
+<td><code>Character.toString(cp)</code>・<code>sb.appendCodePoint(cp)</code></td></tr>
+<tr><td>文字の種類を調べる</td><td><code>Character.isLetter(char)</code></td><td><code>Character.isLetter(int)</code>・<code>Character.UnicodeBlock.of(int)</code></td></tr>
+</tbody>
+</table></div>
+<p>たとえば <code>"🍣".substring(0, 1)</code> はサロゲートの片方（<span class="mono">D83C</span>）だけの不正な文字列になり、UTF-8 へ <code>getBytes</code> すると <span class="mono">3F</span>（<code>?</code>）になる。<code>char c = '🍣';</code> は 1 つの <code>char</code> に入らないのでコンパイルできない。見た目の 1 文字で区切りたいときは <code>BreakIterator.getCharacterInstance()</code> か正規表現の <code>\X</code> を使う。</p>
+<h3>Java の Charset の名前</h3>
+<p><code>Charset.forName</code> は正式名のほかに別名も受け付ける。別名が指す実体は、<code>name()</code> で確かめられる。
+「SJIS」と書くと windows-31j ではなく Shift_JIS になる点に注意する。</p>
+<div class="scroll"><table class="list">
+<thead><tr><th>forName に渡す名前</th><th>name()（実体）</th><th>備考</th></tr></thead>
+<tbody>
+<tr><td class="mono">Shift_JIS</td><td class="mono">Shift_JIS</td><td>JIS X 0208 だけの Shift_JIS</td></tr>
+<tr><td class="mono">SJIS</td><td class="mono">Shift_JIS</td><td>Shift_JIS の別名。windows-31j ではない</td></tr>
+<tr><td class="mono">windows-31j</td><td class="mono">windows-31j</td><td>Windows の拡張を含む Shift_JIS</td></tr>
+<tr><td class="mono">MS932</td><td class="mono">windows-31j</td><td>windows-31j の別名</td></tr>
+<tr><td class="mono">CP943C</td><td class="mono">x-IBM943C</td><td>IBM の Shift_JIS。windows-31j とは変換表が違う</td></tr>
+<tr><td class="mono">EUC-JP</td><td class="mono">EUC-JP</td><td></td></tr>
+<tr><td class="mono">UTF8</td><td class="mono">UTF-8</td><td>UTF-8 の別名</td></tr>
+<tr><td class="mono">UTF-16</td><td class="mono">UTF-16</td><td>読むときは BOM で順序を決め、書くときは BOM（FE FF）を付ける</td></tr>
+</tbody>
+</table></div>
+<p class="note">すべての JDK にあると保証されているのは、<code>StandardCharsets</code> にある US-ASCII・ISO-8859-1・UTF-8・UTF-16・UTF-16BE・UTF-16LE だけ。Shift_JIS・windows-31j・EUC-JP は <code>jdk.charsets</code> モジュールにあるので、<code>jlink</code> で最小の実行環境を作るとこのモジュールを含めない限り使えない。</p>
+<h3>符号化方式を省略したときに使われる値</h3>
+<p>符号化方式を省略できる API では、次の値が使われる。どれも実行環境によって変わりうるので、外とやり取りするときは明示する。</p>
+<div class="scroll"><table class="list">
+<thead><tr><th>値</th><th>何に使われるか</th><th>この環境の値</th></tr></thead>
+<tbody>
+<tr><td class="mono">Charset.defaultCharset()（file.encoding）</td><td><code>new String(bytes)</code>・<code>getBytes()</code>・<code>FileReader</code>・<code>FileWriter</code>・<code>Scanner</code> など。JDK 18 から UTF-8（JEP 400）</td><td class="mono">UTF-8</td></tr>
+<tr><td class="mono">native.encoding</td><td>OS 本来の符号化方式（JDK 17 から）。日本語の Windows では MS932 になる。JDK 18 より前の既定値に当たる</td><td class="mono">UTF-8</td></tr>
+<tr><td class="mono">stdout.encoding</td><td><code>System.out</code> が端末へ書くときの符号化方式（JDK 19 から）</td><td class="mono">UTF-8</td></tr>
+<tr><td class="mono">sun.jnu.encoding</td><td>ファイル名・コマンドライン引数・環境変数</td><td class="mono">UTF-8</td></tr>
+<tr><td class="mono">javac -encoding</td><td>ソースファイル。Maven では <code>project.build.sourceEncoding</code>。JDK 18 から既定は UTF-8</td><td class="mono">—</td></tr>
+</tbody>
+</table></div>
+<p class="note"><code>Files.readString</code>・<code>Files.newBufferedReader</code> など <code>java.nio.file.Files</code> のメソッドは、省略すると JDK の版によらず UTF-8 を使う。</p>
+<h3>ソースコードとクラスファイルの中の文字</h3>
+<ul>
+<li>ソースでは <code>\uXXXX</code> で UTF-16 のコード単位を書ける。BMP の外の文字は 2 つ並べ、「🍣」は <code>"\uD83C\uDF63"</code> になる</li>
+<li><code>\uXXXX</code> はコンパイルの最初の段で文字に置き換わる。コメントの中の <code>\u000A</code> も改行になり、その後ろがコードとして扱われるので注意する</li>
+<li>クラスファイルの文字列定数・<code>DataOutputStream.writeUTF</code>・JNI は、UTF-8 に似た<b>修正 UTF-8</b>（modified UTF-8）を使う。U+0000 を <span class="mono">C0 80</span> にし、BMP の外の文字はサロゲートを 1 つずつ 3 バイトにする。「🍣」は UTF-8 では <span class="mono">F0 9F 8D A3</span>、修正 UTF-8 では <span class="mono">ED A0 BC ED BD A3</span>。ほかのプログラムと UTF-8 でやり取りする用途には使わない</li>
+</ul>
 </section>
 <div class="part" id="part-jis"><span>PART 02</span>JIS と Shift_JIS 系</div>
 <section id="kuten">
